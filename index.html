@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Felix Feger</title>
+<meta name="description" content="Felix Feger — founder of City Metro, traveler, and builder of small internet things.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="brand">felixfeger.com</a>
+    <nav class="nav-desktop" aria-label="Primary">
+      <a href="index.html" aria-current="page">Welcome</a>
+      <a href="travel.html">Travel</a>
+      <a href="socials.html">Socials</a>
+      <a href="city-metro.html">City Metro</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
+  </div>
+  <nav class="nav-mobile" aria-label="Mobile">
+    <a href="index.html">Welcome</a>
+    <a href="travel.html">Travel</a>
+    <a href="socials.html">Socials</a>
+    <a href="city-metro.html">City Metro</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <svg class="wave-icon" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M2 10 Q10 2 18 10 T34 10 T50 10 T62 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      <path d="M2 20 Q10 12 18 20 T34 20 T50 20 T62 20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      <path d="M2 30 Q10 22 18 30 T34 30 T50 30 T62 30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h1>Hi, I'm Felix!</h1>
+    <p class="tagline">Founder of City Metro, occasional traveler, builder of small internet things.</p>
+    <a href="#quick-links" class="btn">About</a>
+  </section>
+
+  <svg class="wave-divider" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0,30 C150,60 350,0 600,30 C850,60 1050,0 1200,30 L1200,60 L0,60 Z" fill="currentColor"/>
+  </svg>
+
+  <section class="quick-links" id="quick-links">
+    <div class="wrap">
+      <div class="quick-grid">
+        <div class="quick-card">
+          <h3>Travel</h3>
+          <p>Photos and notes from Venice, the Alhambra, Hawaii, and wherever's next.</p>
+          <a href="travel.html">See the galleries &rsaquo;</a>
+        </div>
+        <div class="quick-card">
+          <h3>City Metro</h3>
+          <p>A fictional transit authority I've been building since 2022 — and everything that's grown around it.</p>
+          <a href="city-metro.html">Learn more &rsaquo;</a>
+        </div>
+        <div class="quick-card">
+          <h3>Socials</h3>
+          <p>Where I actually post — Instagram, YouTube, and the rest, all in one place.</p>
+          <a href="socials.html">Find me &rsaquo;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">&copy; <span id="year"></span> Felix Feger. Built by hand.</div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
