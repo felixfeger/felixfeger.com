@@ -4,20 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Records — Felix Feger</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <header class="site-header">
   <div class="wrap">
-    <a href="index.html" class="brand">felixfeger.com</a>
+    <a href="index.html" class="brand"><img src="logo.png" alt="Office of Felix Feger" class="brand-logo"></a>
     <nav class="nav-desktop" aria-label="Primary">
       <a href="index.html">Welcome</a>
       <a href="travel.html">Travel</a>
       <a href="socials.html">Socials</a>
       <a href="city-metro.html">City Metro</a>
       <a href="blog.html">Blog</a>
-      <a href="records.html" aria-current="page">Records</a>
       <a href="contact.html">Contact</a>
     </nav>
     <button class="menu-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
@@ -28,42 +28,55 @@
     <a href="socials.html">Socials</a>
     <a href="city-metro.html">City Metro</a>
     <a href="blog.html">Blog</a>
-    <a href="records.html">Records</a>
     <a href="contact.html">Contact</a>
   </nav>
 </header>
 
 <main>
-  <section class="page-hero">
-    <div class="wrap">
-      <div class="eyebrow">Records</div>
-      <h1>Request a document</h1>
-      <p>Looking for a copy of a City Metro standard, policy, or other document? Submit a request below and I'll follow up.</p>
-    </div>
-  </section>
+  <!-- Password gate — shown until the correct password is entered -->
+  <div class="gate-wrap" id="gate">
+    <h1>Records</h1>
+    <p style="color: var(--ink-soft);">This page is private. Enter the password to continue.</p>
+    <form id="gate-form">
+      <input type="password" id="gate-password" placeholder="Password" autocomplete="off" required>
+      <div class="gate-error" id="gate-error"></div>
+      <button type="submit" class="btn">Unlock</button>
+    </form>
+  </div>
 
-  <section>
-    <div class="wrap contact-layout">
-      <div class="contact-info">
-        <div class="label">What you can request</div>
-        <div class="value">Any City Metro document or standard — code of conduct, branding guidelines, technical specs, or anything else referenced on the site.</div>
-        <div class="label">Email</div>
-        <div class="value"><a href="mailto:hello@felixfeger.com">hello@felixfeger.com</a></div>
+  <!-- Real content — hidden until unlocked -->
+  <div id="protected-content" style="display: none;">
+    <section class="page-hero">
+      <div class="wrap">
+        <div class="eyebrow">Records</div>
+        <h1>Request a document</h1>
+        <p>Looking for a copy of a City Metro standard, policy, or other document? Submit a request below and I'll follow up.</p>
       </div>
+    </section>
 
-      <div class="form-frame">
-        <!--
-          Tally.so embed: create a free form at tally.so, then replace
-          FORM_ID below with your form's ID (from the share/embed link).
-        -->
-        <iframe
-          src="https://tally.so/embed/1AL00W?alignLeft=1&hideTitle=1&transparentBackground=1"
-          loading="lazy"
-          title="Document request form">
-        </iframe>
+    <section>
+      <div class="wrap contact-layout">
+        <div class="contact-info">
+          <div class="label">What you can request</div>
+          <div class="value">Any City Metro document or standard — code of conduct, branding guidelines, technical specs, or anything else referenced on the site.</div>
+          <div class="label">Email</div>
+          <div class="value"><a href="mailto:hello@felixfeger.com">hello@felixfeger.com</a></div>
+        </div>
+
+        <div class="form-frame">
+          <!--
+            Tally.so embed: create a free form at tally.so, then replace
+            FORM_ID below with your form's ID (from the share/embed link).
+          -->
+          <iframe
+            src="https://tally.so/embed/FORM_ID?alignLeft=1&hideTitle=1&transparentBackground=1"
+            loading="lazy"
+            title="Document request form">
+          </iframe>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </main>
 
 <footer class="site-footer">
@@ -71,5 +84,45 @@
 </footer>
 
 <script src="js/main.js"></script>
+<script>
+  // Client-side password gate. IMPORTANT: this only hides the page from
+  // casual visitors and search engines (see the noindex meta tag above)
+  // — the password lives in this file's own source, so anyone who opens
+  // "View Source" or the browser's dev tools can read it. It's a soft
+  // deterrent, not real security. If you ever need this to be genuinely
+  // private (not just unlisted), it would need a server-side check
+  // instead — happy to build that if it becomes a real requirement.
+  (function () {
+    var PASSWORD = "felixfeger"; // <-- set your real password here
+    var STORAGE_KEY = "records-unlocked";
+
+    var gate = document.getElementById("gate");
+    var content = document.getElementById("protected-content");
+    var form = document.getElementById("gate-form");
+    var input = document.getElementById("gate-password");
+    var error = document.getElementById("gate-error");
+
+    function unlock() {
+      gate.style.display = "none";
+      content.style.display = "block";
+    }
+
+    if (sessionStorage.getItem(STORAGE_KEY) === "1") {
+      unlock();
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (input.value === PASSWORD) {
+        sessionStorage.setItem(STORAGE_KEY, "1");
+        unlock();
+      } else {
+        error.textContent = "Incorrect password.";
+        input.value = "";
+        input.focus();
+      }
+    });
+  })();
+</script>
 </body>
 </html>
