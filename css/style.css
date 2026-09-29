@@ -77,12 +77,20 @@ p { max-width: 62ch; }
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.15rem;
   color: var(--ink);
 }
 .brand:hover { text-decoration: none; }
+
+.brand-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
 
 .nav-desktop {
   display: flex;
@@ -329,14 +337,6 @@ section + section { border-top: 1px solid var(--line); }
 
 /* ---------- city metro page ---------- */
 
-.metro-hero {
-  background: var(--teal-deep);
-  color: #F5F1E8;
-  border-bottom: none;
-}
-.metro-hero .eyebrow { color: var(--amber); }
-.metro-hero p { color: #D8E2E0; }
-
 .timeline { border-left: 2px solid var(--line); padding-left: 28px; }
 .timeline-item { position: relative; margin-bottom: 36px; }
 .timeline-item:last-child { margin-bottom: 0; }
@@ -379,7 +379,7 @@ section + section { border-top: 1px solid var(--line); }
 .post-item p { color: var(--ink-soft); }
 .post-item a.read-more { font-weight: 600; font-size: 0.9rem; }
 
-/* ---------- contact page ---------- */
+/* ---------- contact / records page ---------- */
 
 .contact-layout {
   display: grid;
@@ -396,6 +396,31 @@ section + section { border-top: 1px solid var(--line); }
   background: var(--bg-raised);
 }
 .form-frame iframe { width: 100%; height: 460px; border: 0; }
+
+/* ---------- records password gate ---------- */
+
+.gate-wrap {
+  max-width: 420px;
+  margin: 80px auto;
+  text-align: center;
+  padding: 0 24px;
+}
+.gate-wrap input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  margin: 18px 0;
+  box-sizing: border-box;
+  text-align: center;
+}
+.gate-error {
+  color: #8A2B2B;
+  font-size: 0.9rem;
+  min-height: 1.2em;
+  margin-bottom: 8px;
+}
 
 /* ---------- footer ---------- */
 
