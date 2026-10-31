@@ -1,26 +1,34 @@
 
-// js/pixelfed.js
-//
-// Felix Feger — Pixelfed Photo Gallery
-//
-// Features:
-// - Same-domain Cloudflare Pages API proxy
-// - Direct photo rendering (no individual post iframes)
-// - Automatic image cropping
-// - Responsive gallery
-// - Infinite scrolling
-// - Multiple photos per post
-// - Click photos to open original Pixelfed posts
-// - Manual Load More button
-// - Error handling
-//
-// API:
-// https://felixfeger.com/api/pixelfed/
-//
-// Configuration is read from js/site.js.
+/* ==========================================================
+   FELIX FEGER — PIXELFED PHOTO GALLERY
+   ==========================================================
+
+   Source:
+   Pixelfed public Atom feed
+
+   API:
+   /api/pixelfed/feed
+
+   Features:
+   - Direct image rendering
+   - Automatic image cropping
+   - Responsive layout
+   - Multiple images per post
+   - Click to open original Pixelfed post
+   - Lazy image loading
+   - XML parsing
+   - Error handling
+   - No OAuth or API account lookup
+   - No individual Pixelfed embeds
+
+   ========================================================== */
 
 (function () {
   "use strict";
+
+  // ========================================================
+  // ELEMENTS
+  // ========================================================
 
   var feed = document.getElementById("pixelfed-feed");
   if (!feed) return;
@@ -29,9 +37,10 @@
   var moreBtn = document.getElementById("pixelfed-more");
   var profileLink = document.getElementById("pixelfed-profile-link");
 
-  // =========================================
+
+  // ========================================================
   // CONFIGURATION
-  // =========================================
+  // ========================================================
 
   var cfg = (window.SITE && window.SITE.pixelfed) || {};
 
@@ -45,35 +54,30 @@
     .replace(/^@/, "");
 
   var apiBase = String(
-    cfg.apiBase || "/api/pixelfed"
-  ).trim().replace(/\/+$/, "");
-
-  var PAGE_SIZE = 12;
+    cfg.apiBase || "/api/pixelfed/feed"
+  ).trim();
 
   var base = "https://" + instance;
 
-  // =========================================
+  var ATOM_NAMESPACE =
+    "http://www.w3.org/2005/Atom";
+
+  var MEDIA_NAMESPACE =
+    "http://search.yahoo.com/mrss/";
+
+
+  // ========================================================
   // STATE
-  // =========================================
+  // ========================================================
 
-  var accountId = cfg.accountId
-    ? String(cfg.accountId)
-    : null;
+  var loadedImages = new Set();
+  var photoCount = 0;
+  var postCount = 0;
 
-  var statusesPath = null;
-  var nextMaxId = null;
 
-  var loading = false;
-  var done = false;
-
-  var seen = new Set();
-  var shown = 0;
-
-  var observer = null;
-
-  // =========================================
-  // HELPERS
-  // =========================================
+  // ========================================================
+  // STATUS
+  // ========================================================
 
   function setStatus(message) {
     if (statusEl) {
@@ -81,136 +85,13 @@
     }
   }
 
-  function setLoadMoreVisible(visible) {
-    if (moreBtn) {
-      moreBtn.hidden = !visible;
-    }
-  }
 
-  function setLoading(value) {
-    loading = value;
+  // ========================================================
+  // URL VALIDATION
+  // ========================================================
 
-    if (moreBtn) {
-      moreBtn.disabled = value;
-    }
-  }
-
-  function getJSON(url) {
-    return fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json"
-      }
-    }).then(function (response) {
-      if (!response.ok) {
-        throw new Error(
-          "API request failed: HTTP " + response.status
-        );
-      }
-
-      return response.json();
-    });
-  }
-
-  // Try API endpoints in order.
-  function firstSuccess(urls, pick) {
-    return urls.reduce(function (chain, url) {
-      return chain.catch(function () {
-        return getJSON(url).then(function (json) {
-          var value = pick(json, url);
-
-          if (!value) {
-            throw new Error("Invalid API response");
-          }
-
-          return value;
-        });
-      });
-    }, Promise.reject(new Error("Starting API lookup")));
-  }
-
-  // =========================================
-  // ACCOUNT LOOKUP
-  // =========================================
-
-  function resolveAccountId() {
-    if (accountId) {
-      return Promise.resolve(accountId);
-    }
-
-    var name = encodeURIComponent(username);
-
-    return firstSuccess(
-      [
-        apiBase +
-          "/api/v1/accounts/lookup?acct=" + name,
-
-        apiBase +
-          "/api/v1.1/accounts/username/" + name
-      ],
-      function (json) {
-        return json && json.id
-          ? String(json.id)
-          : null;
-      }
-    ).then(function (id) {
-      accountId = id;
-      return id;
-    });
-  }
-
-  // =========================================
-  // FETCH POSTS
-  // =========================================
-
-  function fetchStatuses(maxId) {
-    var query =
-      "?limit=" + PAGE_SIZE +
-      "&only_media=true" +
-      (maxId
-        ? "&max_id=" + encodeURIComponent(maxId)
-        : "");
-
-    var paths = [
-      "/api/v1/accounts/" +
-        accountId +
-        "/statuses",
-
-      "/api/pixelfed/v1/accounts/" +
-        accountId +
-        "/statuses"
-    ];
-
-    if (statusesPath) {
-      paths = [statusesPath];
-    }
-
-    return firstSuccess(
-      paths.map(function (path) {
-        return apiBase + path + query;
-      }),
-      function (json, url) {
-        if (!Array.isArray(json)) {
-          return null;
-        }
-
-        statusesPath = url
-          .replace(apiBase, "")
-          .split("?")[0];
-
-        return {
-          list: json
-        };
-      }
-    );
-  }
-
-  // =========================================
-  // PHOTO URLS
-  // =========================================
-
-  function getMediaURL(value) {
-    if (!value) return "";
+  function safeURL(value) {
+    if (!value) return null;
 
     try {
       var url = new URL(value, base + "/");
@@ -219,57 +100,269 @@
         url.protocol !== "https:" &&
         url.protocol !== "http:"
       ) {
-        return "";
+        return null;
       }
 
       return url.href;
 
     } catch (error) {
-      return "";
+      return null;
     }
   }
 
-  function getPostURL(status) {
-    var author =
-      (status.account && status.account.username) ||
-      username;
 
-    var originalURL = getMediaURL(status.url);
+  // ========================================================
+  // XML HELPERS
+  // ========================================================
 
-    if (originalURL) {
-      return originalURL;
-    }
-
-    return (
-      base +
-      "/p/" +
-      encodeURIComponent(author) +
-      "/" +
-      encodeURIComponent(status.id)
+  function getChildren(element, name) {
+    return Array.from(element.children || []).filter(
+      function (child) {
+        return child.localName === name;
+      }
     );
   }
 
-  // =========================================
-  // CREATE PHOTO TILE
-  // =========================================
+  function getChild(element, name) {
+    return getChildren(element, name)[0] || null;
+  }
 
-  function createPhoto(status, attachment) {
-    if (!attachment) return false;
+  function getText(element, name) {
+    var child = getChild(element, name);
 
-    // Only display image attachments.
-    // Videos can be added separately later.
+    return child
+      ? child.textContent.trim()
+      : "";
+  }
+
+
+  // ========================================================
+  // GET ATOM POST CONTENT
+  // ========================================================
+
+  function getContentHTML(entry) {
+    var content = getChild(entry, "content");
+
+    if (!content) return "";
+
+    var type = content.getAttribute("type") || "text";
+
+    // HTML content is normally escaped or stored in CDATA.
     if (
-      attachment.type &&
-      attachment.type !== "image"
+      type === "html" ||
+      type === "text" ||
+      type === "text/html"
     ) {
-      return false;
+      return content.textContent || "";
     }
 
-    var imageURL = getMediaURL(
-      attachment.preview_url || attachment.url
+    // Handle XHTML content.
+    if (type === "xhtml") {
+      var serializer = new XMLSerializer();
+
+      return Array.from(content.childNodes)
+        .map(function (node) {
+          return serializer.serializeToString(node);
+        })
+        .join("");
+    }
+
+    return content.textContent || "";
+  }
+
+
+  // ========================================================
+  // EXTRACT IMAGES FROM POST
+  // ========================================================
+
+  function extractImages(entry) {
+    var images = [];
+
+    function addImage(url, description) {
+      var safe = safeURL(url);
+
+      if (!safe) return;
+
+      if (!images.some(function (item) {
+        return item.url === safe;
+      })) {
+        images.push({
+          url: safe,
+          alt: description || ""
+        });
+      }
+    }
+
+    // ------------------------------------------------------
+    // 1. Extract images embedded in Atom HTML content.
+    // ------------------------------------------------------
+
+    var html = getContentHTML(entry);
+
+    if (html) {
+      var htmlDoc = new DOMParser().parseFromString(
+        html,
+        "text/html"
+      );
+
+      var imageElements =
+        htmlDoc.querySelectorAll("img");
+
+      imageElements.forEach(function (image) {
+        var src =
+          image.getAttribute("src") ||
+          image.getAttribute("data-src") ||
+          image.getAttribute("data-original");
+
+        // Support responsive image source sets.
+        if (!src) {
+          var srcset = image.getAttribute("srcset");
+
+          if (srcset) {
+            src = srcset.split(",")[0].trim().split(/\s+/)[0];
+          }
+        }
+
+        addImage(
+          src,
+          image.getAttribute("alt") || ""
+        );
+      });
+    }
+
+    // ------------------------------------------------------
+    // 2. Extract Media RSS content.
+    // ------------------------------------------------------
+
+    var mediaContent = entry.getElementsByTagNameNS(
+      MEDIA_NAMESPACE,
+      "content"
     );
 
-    if (!imageURL) return false;
+    Array.from(mediaContent).forEach(function (media) {
+      var type = media.getAttribute("type") || "";
+      var medium = media.getAttribute("medium") || "";
+
+      if (
+        type.startsWith("image/") ||
+        medium === "image"
+      ) {
+        addImage(
+          media.getAttribute("url"),
+          media.getAttribute("title") || ""
+        );
+      }
+    });
+
+    // ------------------------------------------------------
+    // 3. Extract Media RSS thumbnails if necessary.
+    // ------------------------------------------------------
+
+    if (!images.length) {
+      var thumbnails = entry.getElementsByTagNameNS(
+        MEDIA_NAMESPACE,
+        "thumbnail"
+      );
+
+      Array.from(thumbnails).forEach(function (thumbnail) {
+        addImage(
+          thumbnail.getAttribute("url"),
+          thumbnail.getAttribute("title") || ""
+        );
+      });
+    }
+
+    // ------------------------------------------------------
+    // 4. Extract Atom enclosure links if necessary.
+    // ------------------------------------------------------
+
+    if (!images.length) {
+      getChildren(entry, "link").forEach(function (link) {
+        var rel = link.getAttribute("rel") || "";
+        var type = link.getAttribute("type") || "";
+
+        if (
+          rel === "enclosure" &&
+          type.startsWith("image/")
+        ) {
+          addImage(link.getAttribute("href"), "");
+        }
+      });
+    }
+
+    return images;
+  }
+
+
+  // ========================================================
+  // GET ORIGINAL POST URL
+  // ========================================================
+
+  function getPostURL(entry) {
+    var links = getChildren(entry, "link");
+
+    for (var i = 0; i < links.length; i++) {
+      var link = links[i];
+
+      var rel = link.getAttribute("rel") || "alternate";
+
+      if (rel === "alternate") {
+        var url = safeURL(link.getAttribute("href"));
+
+        if (url) return url;
+      }
+    }
+
+    var id = getText(entry, "id");
+    var idURL = safeURL(id);
+
+    if (idURL && /^https?:/.test(id)) {
+      return idURL;
+    }
+
+    return base + "/@" + encodeURIComponent(username);
+  }
+
+
+  // ========================================================
+  // GET POST CAPTION
+  // ========================================================
+
+  function getCaption(entry) {
+    var summary = getText(entry, "summary");
+    var title = getText(entry, "title");
+
+    var caption = summary || title;
+
+    if (!caption) {
+      var html = getContentHTML(entry);
+
+      if (html) {
+        var doc = new DOMParser().parseFromString(
+          html,
+          "text/html"
+        );
+
+        caption = doc.body.textContent.trim();
+      }
+    }
+
+    return caption
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+
+  // ========================================================
+  // CREATE PHOTO TILE
+  // ========================================================
+
+  function createPhoto(imageData, postURL, caption) {
+    if (loadedImages.has(imageData.url)) {
+      return;
+    }
+
+    loadedImages.add(imageData.url);
 
     var item = document.createElement("article");
     item.className = "pf-item";
@@ -277,22 +370,17 @@
     var link = document.createElement("a");
 
     link.className = "pf-photo-link";
-    link.href = getPostURL(status);
+    link.href = postURL;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
 
-    link.setAttribute(
-      "aria-label",
-      "View photo on Pixelfed"
-    );
-
     var image = document.createElement("img");
 
-    image.src = imageURL;
+    image.src = imageData.url;
 
     image.alt =
-      attachment.description ||
-      status.content?.replace(/<[^>]*>/g, "").trim() ||
+      imageData.alt ||
+      caption ||
       "Photo from Pixelfed";
 
     image.loading = "lazy";
@@ -300,6 +388,10 @@
 
     image.addEventListener("error", function () {
       item.remove();
+
+      photoCount--;
+
+      loadedImages.delete(imageData.url);
     });
 
     link.appendChild(image);
@@ -307,117 +399,120 @@
 
     feed.appendChild(item);
 
-    shown++;
-
-    return true;
+    photoCount++;
   }
 
-  // =========================================
-  // RENDER POSTS
-  // =========================================
 
-  function render(list) {
-    var added = 0;
+  // ========================================================
+  // PROCESS ATOM ENTRIES
+  // ========================================================
 
-    list.forEach(function (status) {
-      if (
-        !status ||
-        !status.id ||
-        seen.has(String(status.id))
-      ) {
-        return;
-      }
+  function renderEntries(entries) {
+    entries.forEach(function (entry) {
+      var images = extractImages(entry);
 
-      seen.add(String(status.id));
+      if (!images.length) return;
 
-      // Ignore boosts and replies.
-      if (
-        status.reblog ||
-        status.in_reply_to_id
-      ) {
-        return;
-      }
+      var postURL = getPostURL(entry);
+      var caption = getCaption(entry);
 
-      var attachments =
-        status.media_attachments || [];
+      var added = false;
 
-      attachments.forEach(function (attachment) {
-        if (createPhoto(status, attachment)) {
-          added++;
+      images.forEach(function (image) {
+        if (!loadedImages.has(image.url)) {
+          createPhoto(image, postURL, caption);
+          added = true;
         }
       });
-    });
 
-    return added;
+      if (added) {
+        postCount++;
+      }
+    });
   }
 
-  // =========================================
-  // LOAD MORE POSTS
-  // =========================================
 
-  function loadMore() {
-    if (loading || done) {
-      return Promise.resolve();
-    }
+  // ========================================================
+  // LOAD ATOM FEED
+  // ========================================================
 
-    setLoading(true);
+  function loadFeed() {
+    setStatus("Loading photos…");
 
-    setStatus(
-      shown
-        ? "Loading more photos…"
-        : "Loading photos…"
-    );
-
-    var previousCursor = nextMaxId;
-
-    return resolveAccountId()
-      .then(function () {
-        return fetchStatuses(nextMaxId);
-      })
-      .then(function (result) {
-        var list = result.list;
-
-        if (list.length) {
-          nextMaxId = String(
-            list[list.length - 1].id
+    fetch(apiBase, {
+      method: "GET",
+      headers: {
+        Accept: "application/atom+xml, application/xml, text/xml"
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error(
+            "Feed request failed: HTTP " + response.status
           );
         }
 
-        var added = render(list);
+        return response.text();
+      })
+      .then(function (xml) {
+        var parser = new DOMParser();
 
-        // No more posts.
-        if (
-          !list.length ||
-          (
-            previousCursor &&
-            nextMaxId === previousCursor
+        var documentXML = parser.parseFromString(
+          xml,
+          "application/xml"
+        );
+
+        // Check for XML parsing errors.
+        var parserError =
+          documentXML.getElementsByTagName("parsererror")[0];
+
+        if (parserError) {
+          throw new Error("Invalid Atom XML received.");
+        }
+
+        var root = documentXML.documentElement;
+
+        if (!root || root.localName !== "feed") {
+          throw new Error("The response is not an Atom feed.");
+        }
+
+        // Obtain all Atom entries.
+        var entries = Array.from(
+          documentXML.getElementsByTagNameNS(
+            ATOM_NAMESPACE,
+            "entry"
           )
-        ) {
-          done = true;
+        );
 
-          setLoadMoreVisible(false);
+        // Fallback for feeds without namespace recognition.
+        if (!entries.length) {
+          entries = Array.from(
+            documentXML.getElementsByTagName("entry")
+          );
+        }
 
+        if (!entries.length) {
+          setStatus("No recent posts were found.");
+          return;
+        }
+
+        renderEntries(entries);
+
+        if (photoCount === 0) {
           setStatus(
-            shown
-              ? "You've reached the end! " +
-                shown +
-                " photos displayed."
-              : "No photos found."
+            "No photos could be extracted from the feed."
           );
 
           return;
         }
 
-        // Continue pagination even if a page contained
-        // posts without usable images.
-        setLoadMoreVisible(true);
-
         setStatus(
-          added
-            ? ""
-            : "Looking for more photos…"
+          "Showing " +
+          photoCount +
+          " photos from " +
+          postCount +
+          " recent posts."
         );
-
       })
       .catch(function (error) {
         console.error(
@@ -426,59 +521,23 @@
         );
 
         setStatus(
-          "Unable to load photos. " +
+          "Unable to load Pixelfed photos. " +
           (error.message || "Please try again later.")
         );
-
-        setLoadMoreVisible(true);
-
-      })
-      .then(function () {
-        setLoading(false);
       });
   }
 
-  // =========================================
-  // LOAD MORE BUTTON
-  // =========================================
 
-  if (moreBtn) {
-    moreBtn.addEventListener("click", function () {
-      loadMore();
-    });
+  // ========================================================
+  // INITIALIZE
+  // ========================================================
+
+  if (!username || username === "YOUR_USERNAME") {
+    setStatus("Pixelfed is not configured in js/site.js.");
+    return;
   }
 
-  // =========================================
-  // AUTOMATIC INFINITE SCROLL
-  // =========================================
-
-  if (
-    "IntersectionObserver" in window &&
-    moreBtn
-  ) {
-    observer = new IntersectionObserver(
-      function (entries) {
-        if (
-          entries[0].isIntersecting &&
-          !moreBtn.hidden &&
-          !loading &&
-          !done
-        ) {
-          loadMore();
-        }
-      },
-      {
-        rootMargin: "600px 0px"
-      }
-    );
-
-    observer.observe(moreBtn);
-  }
-
-  // =========================================
-  // PROFILE LINK
-  // =========================================
-
+  // Profile link.
   if (profileLink) {
     profileLink.href =
       base + "/@" + encodeURIComponent(username);
@@ -488,20 +547,13 @@
     profileLink.hidden = false;
   }
 
-  // =========================================
-  // INITIALIZE
-  // =========================================
-
-  if (!username || username === "YOUR_USERNAME") {
-    setStatus(
-      "Pixelfed isn't configured. Check js/site.js."
-    );
-
-    return;
+  // Atom feeds are a recent-post source rather than a
+  // paginated archive, so hide the old Load More button.
+  if (moreBtn) {
+    moreBtn.hidden = true;
   }
 
-  setLoadMoreVisible(false);
-
-  loadMore();
+  // Start gallery.
+  loadFeed();
 
 })();
