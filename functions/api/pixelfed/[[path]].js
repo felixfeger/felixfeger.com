@@ -1,66 +1,62 @@
 
-const PIXELFED = "https://pixelfed.social";
+const FEED_URL =
+  "https://pixelfed.social/users/felix_traveler.atom";
 
-export async function onRequest(context) {
-  const request = context.request;
-  const url = new URL(request.url);
-
+export async function onRequest({ request }) {
   if (request.method !== "GET") {
     return new Response("Method not allowed", {
-      status: 405
-    });
-  }
-
-  // Remove our local API prefix.
-  const upstreamPath = url.pathname.replace(
-    /^\/api\/pixelfed/,
-    ""
-  );
-
-  // Only allow the account and status endpoints.
-  const allowed =
-    upstreamPath === "/api/v1/accounts/lookup" ||
-    /^\/api\/v1\.1\/accounts\/username\/[\w.-]+$/.test(upstreamPath) ||
-    /^\/api\/v1\/accounts\/\d+\/statuses$/.test(upstreamPath) ||
-    /^\/api\/pixelfed\/v1\/accounts\/\d+\/statuses$/.test(upstreamPath);
-
-  if (!allowed) {
-    return new Response("Not found", {
-      status: 404
+      status: 405,
+      headers: { Allow: "GET" }
     });
   }
 
   try {
-    const upstreamURL = new URL(
-      upstreamPath + url.search,
-      PIXELFED
-    );
-
-    const response = await fetch(upstreamURL, {
+    const response = await fetch(FEED_URL, {
       headers: {
-        Accept: "application/json"
+        Accept: "application/atom+xml, application/xml, text/xml"
       }
     });
 
-    const headers = new Headers();
+    if (!response.ok) {
+      return Response.json(
+        {
+          error: "Pixelfed feed request failed",
+          status: response.status
+        },
+        {
+          status: 502
+        }
+      );
+    }
 
-    headers.set(
-      "Content-Type",
-      response.headers.get("Content-Type") ||
-        "application/json"
-    );
+    const xml = await response.text();
 
-    headers.set("Cache-Control", "public, max-age=60");
+    // Verify that the response is XML.
+    if (!xml.trim().startsWith("<?xml") &&
+        !xml.includes("<feed")) {
+      return Response.json(
+        { error: "Pixelfed returned an invalid Atom feed." },
+        { status: 502 }
+      );
+    }
 
-    return new Response(response.body, {
-      status: response.status,
-      headers
+    return new Response(xml, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/atom+xml; charset=utf-8",
+        "Cache-Control": "public, max-age=300",
+        "X-Content-Type-Options": "nosniff"
+      }
     });
 
   } catch (error) {
     return Response.json(
-      { error: "Pixelfed API unavailable" },
-      { status: 502 }
+      {
+        error: "Unable to connect to Pixelfed."
+      },
+      {
+        status: 502
+      }
     );
   }
 }
