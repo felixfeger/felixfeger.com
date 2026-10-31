@@ -1,374 +1,432 @@
 
-// ==========================================================================
-// Felix Feger — Pixelfed Gallery
-// ==========================================================================
-// Fetches the Atom feed through the same-domain Cloudflare Pages Function.
-// One feed entry = one post.
-// Multiple images belonging to a post stay grouped together.
-// Tablet/mobile: horizontally swipeable photo carousel.
-// Desktop: multi-column gallery.
-// ==========================================================================
+/* ==========================================================================
+   Felix Feger — Pixelfed Gallery
+   Groups photos by post and supports swipeable multi-image galleries.
+   Uses the same-domain Cloudflare Pages Function proxy.
+   ========================================================================== */
 
 (function () {
   "use strict";
 
-  var feed = document.getElementById("pixelfed-feed");
-  if (!feed) return;
+  const config = window.SITE?.pixelfed || {};
 
-  var statusEl = document.getElementById("pixelfed-status");
-  var profileLink = document.getElementById("pixelfed-profile-link");
+  const instance = config.instance || "pixelfed.social";
+  const username = config.username || "felix_traveler";
+  const apiBase = (config.apiBase || "/api/pixelfed").replace(/\/$/, "");
 
-  var cfg = (window.SITE && window.SITE.pixelfed) || {};
+  const feedElement = document.getElementById("pixelfed-feed");
+  const statusElement = document.getElementById("pixelfed-status");
+  const moreButton = document.getElementById("pixelfed-more");
 
-  var instance = String(cfg.instance || "pixelfed.social")
-    .trim()
-    .replace(/^https?:\/\//i, "")
-    .replace(/\/+$/, "");
+  if (!feedElement) return;
 
-  var username = String(cfg.username || "")
-    .trim()
-    .replace(/^@/, "");
+  const feedUrl = `${apiBase}/feed`;
+  const profileUrl = `https://${instance}/@${username}`;
 
-  var apiBase = String(cfg.apiBase || "/api/pixelfed")
-    .replace(/\/+$/, "");
+  /* ------------------------------------------------------------------------
+     Helpers
+     ------------------------------------------------------------------------ */
 
-  var loaded = false;
+  function setStatus(message, show = true) {
+    if (!statusElement) return;
 
-  function setStatus(message) {
-    if (statusEl) statusEl.textContent = message || "";
+    statusElement.textContent = message;
+    statusElement.hidden = !show;
   }
 
-  function getText(element) {
-    return element ? (element.textContent || "").trim() : "";
+  function getElements(parent, selector) {
+    return Array.from(parent.querySelectorAll(selector));
   }
 
-  function getFirst(parent, tag) {
-    return parent.getElementsByTagName(tag)[0] || null;
+  function getFirst(parent, selector) {
+    return parent.querySelector(selector);
   }
 
-  function absoluteUrl(url) {
-    if (!url) return "";
+  function cleanText(value) {
+    const container = document.createElement("div");
+    container.innerHTML = value || "";
 
-    try {
-      return new URL(url, "https://" + instance).href;
-    } catch (error) {
-      return "";
-    }
-  }
-
-  // Convert HTML captions into readable text.
-  function cleanCaption(value) {
-    if (!value) return "";
-
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(value, "text/html");
-
-    doc.querySelectorAll("script, style").forEach(function (el) {
-      el.remove();
-    });
-
-    return (doc.body.textContent || "")
+    return (container.textContent || "")
       .replace(/\s+/g, " ")
       .trim();
   }
 
-  // Extract image URLs from HTML embedded in an Atom entry.
-  function imagesFromHTML(html) {
-    if (!html) return [];
+  function getEntryText(entry, selector) {
+    const element = getFirst(entry, selector);
+    if (!element) return "";
 
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(html, "text/html");
-    var urls = [];
-
-    doc.querySelectorAll("img").forEach(function (img) {
-      var src = img.getAttribute("src");
-
-      if (!src) {
-        var srcset = img.getAttribute("srcset");
-
-        if (srcset) {
-          src = srcset.split(",").pop().trim().split(/\s+/)[0];
-        }
-      }
-
-      if (src) urls.push(src);
-    });
-
-    return urls;
+    return element.textContent || "";
   }
 
-  // Find all media belonging to a single post.
+  function normalizeUrl(url) {
+    if (!url) return "";
+
+    try {
+      return new URL(url.trim(), `https://${instance}`).href;
+    } catch {
+      return "";
+    }
+  }
+
+  function isImageUrl(url, type = "") {
+    if (!url) return false;
+
+    if (type.toLowerCase().startsWith("image/")) {
+      return true;
+    }
+
+    return (
+      /\.(jpe?g|png|gif|webp|avif)(\?|#|$)/i.test(url) ||
+      /\/(media|storage|photos|attachments)\//i.test(url) ||
+      /[?&](format|fm)=(jpg|jpeg|png|webp|avif)/i.test(url)
+    );
+  }
+
+  function unique(values) {
+    return [...new Set(values.filter(Boolean))];
+  }
+
+  /* ------------------------------------------------------------------------
+     Extract images from one Atom entry
+     ------------------------------------------------------------------------ */
+
   function extractImages(entry) {
-    var urls = [];
+    const images = [];
 
-    // Images embedded in Atom content.
-    var content = getFirst(entry, "content");
+    function addImage(url, type = "") {
+      const normalized = normalizeUrl(url);
 
-    if (content) {
-      urls = urls.concat(imagesFromHTML(getText(content)));
+      if (!normalized || !isImageUrl(normalized, type)) {
+        return;
+      }
+
+      images.push(normalized);
     }
 
-    // Images embedded in Atom summary.
-    var summary = getFirst(entry, "summary");
+    /*
+     * Extract images from HTML embedded in Atom content or summary.
+     */
+    ["content", "summary"].forEach((selector) => {
+      const element = getFirst(entry, selector);
+      if (!element) return;
 
-    if (summary) {
-      urls = urls.concat(imagesFromHTML(getText(summary)));
-    }
+      const html = element.textContent || "";
+      const container = document.createElement("div");
+      container.innerHTML = html;
 
-    // Pixelfed / ActivityPub media elements.
-    var all = entry.getElementsByTagName("*");
+      getElements(container, "img").forEach((img) => {
+        addImage(
+          img.getAttribute("src") ||
+          img.getAttribute("data-src") ||
+          img.getAttribute("data-original"),
+          img.getAttribute("type") || ""
+        );
+      });
 
-    for (var i = 0; i < all.length; i++) {
-      var el = all[i];
+      getElements(container, "source").forEach((source) => {
+        addImage(
+          source.getAttribute("src"),
+          source.getAttribute("type") || ""
+        );
+      });
+    });
+
+    /*
+     * Extract ActivityPub / Media RSS image elements.
+     */
+    getElements(entry, "*").forEach((element) => {
+      const name = (
+        element.localName ||
+        element.nodeName.split(":").pop()
+      ).toLowerCase();
+
+      const type = element.getAttribute("type") || "";
+      const url =
+        element.getAttribute("url") ||
+        element.getAttribute("href");
 
       if (
-        el.localName === "content" &&
-        el.namespaceURI !== "http://www.w3.org/2005/Atom"
+        name === "content" ||
+        name === "thumbnail" ||
+        name === "image"
       ) {
-        var mediaUrl = el.getAttribute("url");
-
-        if (mediaUrl) urls.push(mediaUrl);
-      }
-
-      if (el.localName === "thumbnail") {
-        var thumbnailUrl = el.getAttribute("url");
-
-        if (thumbnailUrl) urls.push(thumbnailUrl);
-      }
-    }
-
-    // Enclosure links.
-    entry.querySelectorAll("link").forEach(function (link) {
-      if (link.getAttribute("rel") === "enclosure") {
-        var href = link.getAttribute("href");
-        if (href) urls.push(href);
+        addImage(url, type);
       }
     });
 
-    // Normalize and remove duplicates.
-    var seen = {};
+    /*
+     * Extract image enclosures and media links.
+     */
+    getElements(entry, "link").forEach((link) => {
+      const rel = (link.getAttribute("rel") || "").toLowerCase();
+      const type = link.getAttribute("type") || "";
+      const href = link.getAttribute("href");
 
-    return urls
-      .map(absoluteUrl)
-      .filter(function (url) {
-        if (!url || seen[url]) return false;
+      if (
+        rel === "enclosure" ||
+        type.toLowerCase().startsWith("image/")
+      ) {
+        addImage(href, type);
+      }
+    });
 
-        seen[url] = true;
-
-        return /\.(jpe?g|png|webp|gif)(\?|$)/i.test(url) ||
-          url.indexOf("media") !== -1 ||
-          url.indexOf("storage") !== -1;
-      });
+    return unique(images);
   }
+
+  /* ------------------------------------------------------------------------
+     Post information
+     ------------------------------------------------------------------------ */
 
   function getPostLink(entry) {
-    var links = entry.getElementsByTagName("link");
+    const links = getElements(entry, "link");
 
-    for (var i = 0; i < links.length; i++) {
-      var link = links[i];
+    const alternate = links.find((link) => {
+      const rel = link.getAttribute("rel");
+      return !rel || rel === "alternate";
+    });
 
-      if (
-        link.getAttribute("rel") === "alternate" &&
-        link.getAttribute("href")
-      ) {
-        return absoluteUrl(link.getAttribute("href"));
-      }
+    if (alternate) {
+      return normalizeUrl(alternate.getAttribute("href"));
     }
 
-    var id = getText(getFirst(entry, "id"));
+    const id = getEntryText(entry, "id");
 
-    return id && /^https?:\/\//i.test(id)
-      ? id
-      : "https://" + instance + "/@" + username;
+    if (id.startsWith("http://") || id.startsWith("https://")) {
+      return id;
+    }
+
+    return profileUrl;
   }
 
   function getPostDate(entry) {
-    var published = getText(getFirst(entry, "published"));
-    var updated = getText(getFirst(entry, "updated"));
+    const published = getEntryText(entry, "published");
+    const updated = getEntryText(entry, "updated");
 
-    var value = published || updated;
+    const value = published || updated;
+    if (!value) return null;
 
-    if (!value) return "";
+    const date = new Date(value);
 
-    var date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
 
-    if (isNaN(date.getTime())) return "";
+  function formatDate(date) {
+    if (!date) return "";
 
     return new Intl.DateTimeFormat(undefined, {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
+      month: "short",
+      day: "numeric",
+      year: "numeric"
     }).format(date);
   }
 
   function getPostCaption(entry) {
-    var summary = getFirst(entry, "summary");
-    var content = getFirst(entry, "content");
+    const summary = getEntryText(entry, "summary");
+    const content = getEntryText(entry, "content");
 
-    var value = summary ? getText(summary) : "";
+    const caption = cleanText(summary || content);
 
-    if (!value && content) {
-      value = getText(content);
-    }
+    if (!caption) return "";
 
-    return cleanCaption(value);
+    return caption;
   }
 
-  // Create one grouped post card.
-  function createPost(entry) {
-    var images = extractImages(entry);
+  /* ------------------------------------------------------------------------
+     Create image carousel
+     ------------------------------------------------------------------------ */
 
-    if (!images.length) return null;
-
-    var post = document.createElement("article");
-    post.className = "pf-item";
-
-    var postLink = getPostLink(entry);
-
-    // Photo collection.
-    var media = document.createElement("div");
+  function createMedia(images, postLink) {
+    const media = document.createElement("div");
     media.className = "pf-post-media";
 
-    images.forEach(function (url, index) {
-      var slide = document.createElement("div");
+    if (images.length === 1) {
+      media.classList.add("pf-single");
+    }
+
+    images.forEach((imageUrl, index) => {
+      const slide = document.createElement("div");
       slide.className = "pf-slide";
 
-      var anchor = document.createElement("a");
-      anchor.className = "pf-photo-link";
-      anchor.href = postLink;
-      anchor.target = "_blank";
-      anchor.rel = "noopener noreferrer";
-      anchor.setAttribute(
+      const link = document.createElement("a");
+      link.className = "pf-photo-link";
+      link.href = postLink;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.setAttribute(
         "aria-label",
-        "Open Pixelfed post, photo " + (index + 1)
+        `Open Pixelfed post, photo ${index + 1} of ${images.length}`
       );
 
-      var img = document.createElement("img");
-      img.src = url;
-      img.alt = "Photo " + (index + 1) + " from a Pixelfed post";
-      img.loading = "lazy";
-      img.decoding = "async";
+      const image = document.createElement("img");
+      image.src = imageUrl;
+      image.alt = `Pixelfed post photo ${index + 1}`;
+      image.loading = "lazy";
+      image.decoding = "async";
 
-      anchor.appendChild(img);
-      slide.appendChild(anchor);
+      image.addEventListener("error", () => {
+        slide.classList.add("pf-image-error");
+      });
+
+      link.appendChild(image);
+      slide.appendChild(link);
       media.appendChild(slide);
     });
 
-    post.appendChild(media);
-
-    // Swipe indicator for posts containing multiple photos.
     if (images.length > 1) {
-      var hint = document.createElement("div");
+      const hint = document.createElement("span");
       hint.className = "pf-swipe-hint";
-      hint.textContent = "Swipe to see " + images.length + " photos";
-      post.appendChild(hint);
+      hint.textContent = `${images.length} photos · Swipe to view`;
+      hint.setAttribute("aria-hidden", "true");
+
+      media.appendChild(hint);
     }
 
-    // Post metadata.
-    var meta = document.createElement("div");
-    meta.className = "pf-meta";
+    return media;
+  }
 
-    var caption = getPostCaption(entry);
+  /* ------------------------------------------------------------------------
+     Create one complete post card
+     ------------------------------------------------------------------------ */
+
+  function createPost(entry) {
+    const images = extractImages(entry);
+
+    if (!images.length) {
+      return null;
+    }
+
+    const postLink = getPostLink(entry);
+    const caption = getPostCaption(entry);
+    const date = getPostDate(entry);
+
+    const article = document.createElement("article");
+    article.className = "pf-item";
+
+    article.appendChild(createMedia(images, postLink));
+
+    const metadata = document.createElement("div");
+    metadata.className = "pf-meta";
 
     if (caption) {
-      var captionEl = document.createElement("p");
-      captionEl.className = "pf-caption";
-      captionEl.textContent = caption;
-      meta.appendChild(captionEl);
-    }
+      const captionElement = document.createElement("p");
+      captionElement.className = "pf-caption";
+      captionElement.textContent = caption;
 
-    var date = getPostDate(entry);
+      metadata.appendChild(captionElement);
+    }
 
     if (date) {
-      var dateEl = document.createElement("time");
-      dateEl.className = "pf-date";
-      dateEl.textContent = date;
+      const dateElement = document.createElement("time");
+      dateElement.className = "pf-date";
+      dateElement.dateTime = date.toISOString();
+      dateElement.textContent = formatDate(date);
 
-      var published = getText(getFirst(entry, "published"));
-
-      if (published) {
-        dateEl.dateTime = published;
-      }
-
-      meta.appendChild(dateEl);
+      metadata.appendChild(dateElement);
     }
 
-    post.appendChild(meta);
+    if (!caption && !date) {
+      const fallback = document.createElement("a");
+      fallback.className = "pf-date";
+      fallback.href = postLink;
+      fallback.target = "_blank";
+      fallback.rel = "noopener noreferrer";
+      fallback.textContent = "View on Pixelfed";
 
-    return post;
+      metadata.appendChild(fallback);
+    }
+
+    article.appendChild(metadata);
+
+    return article;
   }
 
-  // Fetch the same-domain feed.
-  function loadFeed() {
-    if (loaded) return;
+  /* ------------------------------------------------------------------------
+     Load feed
+     ------------------------------------------------------------------------ */
 
-    loaded = true;
-
+  async function loadPixelfed() {
     setStatus("Loading posts…");
 
-    fetch(apiBase + "/feed", {
-      method: "GET",
-      headers: {
-        "Accept": "application/atom+xml, application/xml, text/xml"
-      },
-      credentials: "same-origin"
-    })
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error("Feed request failed: HTTP " + response.status);
+    feedElement.setAttribute("aria-busy", "true");
+
+    if (moreButton) {
+      moreButton.hidden = true;
+    }
+
+    try {
+      const response = await fetch(feedUrl, {
+        method: "GET",
+        credentials: "same-origin",
+        headers: {
+          Accept: "application/atom+xml, application/xml, text/xml"
         }
-
-        return response.text();
-      })
-      .then(function (xml) {
-        var parser = new DOMParser();
-        var doc = parser.parseFromString(xml, "application/xml");
-
-        if (doc.querySelector("parsererror")) {
-          throw new Error("Invalid Atom feed.");
-        }
-
-        var entries = Array.from(doc.getElementsByTagName("entry"));
-
-        var count = 0;
-
-        entries.forEach(function (entry) {
-          var post = createPost(entry);
-
-          if (post) {
-            feed.appendChild(post);
-            count++;
-          }
-        });
-
-        if (!count) {
-          setStatus("No photos found in the Pixelfed feed.");
-        } else {
-          setStatus("");
-        }
-      })
-      .catch(function (error) {
-        console.error("Pixelfed gallery error:", error);
-
-        loaded = false;
-
-        setStatus(
-          "Unable to load photos right now. Please try refreshing the page."
-        );
       });
+
+      if (!response.ok) {
+        throw new Error(`Feed request failed (${response.status})`);
+      }
+
+      const xmlText = await response.text();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(
+        xmlText,
+        "application/xml"
+      );
+
+      if (xml.querySelector("parsererror")) {
+        throw new Error("The Pixelfed feed returned invalid XML.");
+      }
+
+      const entries = getElements(xml, "entry");
+
+      feedElement.replaceChildren();
+
+      let postCount = 0;
+
+      entries.forEach((entry) => {
+        const post = createPost(entry);
+
+        if (post) {
+          feedElement.appendChild(post);
+          postCount++;
+        }
+      });
+
+      if (postCount === 0) {
+        setStatus(
+          "No photo posts were found. Visit my Pixelfed profile to see more.",
+          true
+        );
+
+        const profileLink = document.createElement("a");
+        profileLink.href = profileUrl;
+        profileLink.target = "_blank";
+        profileLink.rel = "noopener noreferrer";
+        profileLink.textContent = "View Pixelfed profile";
+
+        statusElement?.appendChild(document.createTextNode(" "));
+        statusElement?.appendChild(profileLink);
+      } else {
+        setStatus("", false);
+      }
+
+    } catch (error) {
+      console.error("Pixelfed gallery error:", error);
+
+      feedElement.replaceChildren();
+
+      setStatus(
+        "Unable to load Pixelfed posts right now. Please try again later."
+      );
+    } finally {
+      feedElement.setAttribute("aria-busy", "false");
+    }
   }
 
-  // Configure profile link.
-  if (profileLink && instance && username) {
-    profileLink.href = "https://" + instance + "/@" + username;
-    profileLink.hidden = false;
-  }
+  /* ------------------------------------------------------------------------
+     Initialize
+     ------------------------------------------------------------------------ */
 
-  if (!instance || !username) {
-    setStatus("Pixelfed is not configured in js/site.js.");
-    return;
-  }
-
-  loadFeed();
+  loadPixelfed();
 
 })();
