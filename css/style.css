@@ -720,11 +720,10 @@ section + section {
 }
 
 
-/* ==========================================================================
-   PIXELFED PHOTO GALLERY
-   ========================================================================== */
 
-/* Main gallery grid */
+/* ==========================================================================
+   PIXELFED — GROUPED SOCIAL FEED
+   ========================================================================== */
 
 .pf-grid {
   display: grid;
@@ -734,107 +733,98 @@ section + section {
   align-items: start;
 }
 
-/* Individual photo card.
-   No fixed aspect ratio here because captions must fit below photos. */
-
 .pf-item {
   display: flex;
   flex-direction: column;
-  width: 100%;
   min-width: 0;
+  width: 100%;
   height: auto;
   overflow: visible;
   background: transparent;
-  border-radius: 0;
 }
 
-/* Photo container.
-   Cropping applies to the image only, not the caption. */
+/* Desktop photo layout */
+
+.pf-post-media {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--bg-raised);
+}
+
+.pf-post-media:has(.pf-slide:only-child) {
+  grid-template-columns: 1fr;
+}
+
+.pf-slide {
+  min-width: 0;
+  overflow: hidden;
+}
 
 .pf-photo-link {
   display: block;
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  height: auto;
   overflow: hidden;
-  border-radius: 12px;
   background: var(--bg-raised);
 }
 
-.pf-photo-link:focus-visible {
-  outline: 2px solid var(--teal);
-  outline-offset: 4px;
-}
-
-/* Actual photo */
-
-.pf-item img {
+.pf-photo-link img {
   display: block;
   width: 100%;
   height: 100%;
-  max-width: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.25s ease;
 }
-
-/* Image hover */
 
 @media (hover: hover) {
   .pf-photo-link:hover img {
-    transform: scale(1.04);
+    transform: scale(1.035);
   }
 }
 
-/* ==========================================================================
-   PIXELFED CAPTIONS AND DATES
-   ========================================================================== */
-
-/* Metadata container */
+/* Captions and dates */
 
 .pf-meta {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  min-width: 0;
   padding: 12px 2px 8px;
+  min-width: 0;
 }
-
-/* Post caption */
 
 .pf-caption {
   max-width: 100%;
   margin: 0;
   color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 0.94rem;
-  font-weight: 400;
+  font-size: 0.92rem;
   line-height: 1.55;
   overflow-wrap: anywhere;
-
-  /* Limit extremely long captions while keeping the layout tidy. */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  overflow: hidden;
 }
-
-/* Publication date */
 
 .pf-date {
   display: block;
   color: var(--ink-soft);
   font-size: 0.78rem;
   line-height: 1.4;
-  font-weight: 500;
-  letter-spacing: 0.01em;
 }
 
-/* ==========================================================================
-   PIXELFED STATUS AND LOAD MORE
-   ========================================================================== */
+/* Swipe hint */
+
+.pf-swipe-hint {
+  display: none;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  text-align: right;
+  padding: 6px 3px 0;
+}
+
+/* Status */
 
 .pf-status {
   max-width: 100%;
@@ -850,126 +840,132 @@ section + section {
 }
 
 /* ==========================================================================
-   PIXELFED FALLBACK IFRAME
+   TABLET — TWO POSTS PER ROW, SWIPE PHOTOS
    ========================================================================== */
 
-.pf-fallback {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  margin: 20px auto;
-  overflow: hidden;
-  border-radius: 12px;
-  background: var(--bg-raised);
-}
-
-.pf-fallback iframe {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  height: 800px;
-  border: 0;
-  margin: 0;
-}
-
-
-/* ==========================================================================
-   TABLET RESPONSIVENESS
-   ========================================================================== */
-
-@media (max-width: 900px) {
-
-  /* Two photos per row on tablets. */
+@media (min-width: 601px) and (max-width: 900px) {
 
   .pf-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    gap: 22px;
+  }
+
+  .pf-post-media {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+  }
+
+  .pf-post-media::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pf-slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    scroll-snap-align: start;
+  }
+
+  .pf-photo-link {
+    aspect-ratio: 1 / 1;
+  }
+
+  .pf-swipe-hint {
+    display: block;
   }
 
 }
 
-
 /* ==========================================================================
-   MOBILE RESPONSIVENESS
+   MOBILE — ONE POST PER ROW, INSTAGRAM-STYLE SWIPING
    ========================================================================== */
 
 @media (max-width: 600px) {
 
-  /* Exactly one photo per row. */
-
   .pf-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
+    gap: 30px;
   }
 
   .pf-item {
     width: 100%;
   }
 
-  /* Taller portrait crop on mobile. */
+  /* Each post has its own horizontal photo carousel. */
+
+  .pf-post-media {
+    display: flex;
+    width: 100%;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    border-radius: 10px;
+  }
+
+  .pf-post-media::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pf-slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
 
   .pf-photo-link {
     width: 100%;
     aspect-ratio: 4 / 5;
-    border-radius: 10px;
+    border-radius: 0;
   }
 
-  .pf-item img {
+  .pf-photo-link img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
   }
 
-  /* Mobile caption spacing. */
-
   .pf-meta {
-    padding: 10px 2px 4px;
-    gap: 6px;
+    padding: 12px 2px 4px;
+    gap: 7px;
   }
 
   .pf-caption {
-    font-size: 0.95rem;
+    font-size: 0.94rem;
     line-height: 1.55;
-    -webkit-line-clamp: 5;
-    line-clamp: 5;
   }
 
   .pf-date {
     font-size: 0.78rem;
   }
 
-  .pf-fallback {
-    border-radius: 8px;
-  }
-
-  .pf-fallback iframe {
-    width: 100%;
-    height: 80vh;
-    min-height: 550px;
-    max-height: 900px;
-  }
-
-  .pf-status {
-    margin-top: 22px;
+  .pf-swipe-hint {
+    display: block;
   }
 
 }
 
-
 /* ==========================================================================
-   SMALL SCREEN ADJUSTMENTS
+   SMALL SCREENS
    ========================================================================== */
 
 @media (max-width: 380px) {
 
-  .wrap {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
   .pf-grid {
-    gap: 20px;
+    gap: 24px;
   }
 
   .pf-caption {
@@ -978,32 +974,19 @@ section + section {
 
 }
 
-
 /* ==========================================================================
-   ACCESSIBILITY AND GLOBAL OVERRIDES
+   ACCESSIBILITY
    ========================================================================== */
-
-/* Hidden elements must remain hidden. */
-
-[hidden] {
-  display: none !important;
-}
-
-/* Respect reduced-motion preferences. */
 
 @media (prefers-reduced-motion: reduce) {
 
-  html {
+  .pf-post-media {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+  .pf-photo-link img {
+    transition: none;
   }
 
 }
+
