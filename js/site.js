@@ -5,30 +5,30 @@
 //
 // Responsibilities:
 // 1. Holds site-wide settings.
-// 2. Configures the Pixelfed API connection.
+// 2. Configures the Pixelfed Atom feed.
 // 3. Automatically adds social links to every page footer.
 //
-// Pixelfed photos are retrieved through the same-domain
-// Cloudflare Pages Function at /api/pixelfed.
+// Pixelfed posts are retrieved through the same-domain
+// Cloudflare Pages Function at /api/pixelfed/feed.
+//
+// No Pixelfed API key, OAuth token, or account lookup required.
 
 window.SITE = {
 
   // ---- Pixelfed -----------------------------------------------------
 
   pixelfed: {
+
     // Pixelfed server
     instance: "pixelfed.social",
 
     // Username WITHOUT @
     username: "felix_traveler",
 
-    // Account ID (optional).
-    // Leave empty to look it up automatically.
-    accountId: "",
+    // Same-domain Cloudflare Pages Function.
+    // Retrieves the public Atom feed.
+    apiBase: "/api/pixelfed/feed"
 
-    // Same-domain Cloudflare Pages API proxy.
-    // No external API hostname required.
-    apiBase: "/api/pixelfed"
   },
 
 
@@ -38,22 +38,27 @@ window.SITE = {
   // Do not add Pixelfed here, or it will appear twice.
 
   socials: [
+
     {
       label: "City Metro",
       url: "https://citymetro.xyz"
     },
+
     {
       label: "YouTube",
       url: "https://www.youtube.com/@felix_traveler"
     },
+
     {
       label: "GitHub",
       url: "https://github.com/felixfeger"
     },
+
     {
       label: "Linktree",
       url: "https://linktr.ee/felix_traveler"
     }
+
   ]
 
 };
@@ -64,7 +69,13 @@ window.SITE = {
 // ==========================================================
 
 (function () {
+
   "use strict";
+
+
+  // --------------------------------------------------------
+  // BUILD FOOTER
+  // --------------------------------------------------------
 
   function buildFooter() {
 
@@ -74,12 +85,20 @@ window.SITE = {
 
     if (!wrap) return;
 
+
     // Prevent duplicate footer navigation.
     if (wrap.querySelector(".footer-socials")) {
       return;
     }
 
+
+    // Copy configured social links.
     var links = (window.SITE.socials || []).slice();
+
+
+    // ------------------------------------------------------
+    // PIXELFED PROFILE LINK
+    // ------------------------------------------------------
 
     var pf = window.SITE.pixelfed || {};
 
@@ -92,19 +111,26 @@ window.SITE = {
       .replace(/^https?:\/\//i, "")
       .replace(/\/+$/, "");
 
-    // Automatically add Pixelfed.
+
+    // Automatically insert Pixelfed after City Metro.
     if (
       user &&
       user !== "YOUR_USERNAME" &&
       host
     ) {
-      links.unshift({
+
+      links.splice(1, 0, {
         label: "Pixelfed",
         url: "https://" + host + "/@" + user
       });
+
     }
 
-    // Create footer navigation.
+
+    // ------------------------------------------------------
+    // CREATE FOOTER NAVIGATION
+    // ------------------------------------------------------
+
     var nav = document.createElement("nav");
 
     nav.className = "footer-socials";
@@ -114,7 +140,11 @@ window.SITE = {
       "Social links"
     );
 
-    // Add links.
+
+    // ------------------------------------------------------
+    // ADD SOCIAL LINKS
+    // ------------------------------------------------------
+
     links.forEach(function (item) {
 
       if (!item.label || !item.url) return;
@@ -122,6 +152,7 @@ window.SITE = {
       var a = document.createElement("a");
 
       a.href = item.url;
+
       a.textContent = item.label;
 
       a.target = "_blank";
@@ -132,7 +163,11 @@ window.SITE = {
 
     });
 
-    // Add navigation above the footer copyright.
+
+    // ------------------------------------------------------
+    // INSERT BEFORE COPYRIGHT
+    // ------------------------------------------------------
+
     wrap.insertBefore(
       nav,
       wrap.firstChild
@@ -141,7 +176,10 @@ window.SITE = {
   }
 
 
-  // Initialize after the document is ready.
+  // --------------------------------------------------------
+  // INITIALIZE
+  // --------------------------------------------------------
+
   if (document.readyState === "loading") {
 
     document.addEventListener(
