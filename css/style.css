@@ -990,3 +990,55 @@ section + section {
 
 }
 
+
+/* Pixelfed carousel navigation dots */
+
+.pf-media-wrapper {
+  width: 100%;
+  min-width: 0;
+}
+
+.pf-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0 4px;
+}
+
+.pf-dot {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--line);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.pf-dot.is-active {
+  background: var(--teal);
+  transform: scale(1.25);
+}
+
+.pf-dot:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+/* Hide dots for single-photo posts */
+.pf-single + .pf-dots,
+.pf-media-wrapper:has(.pf-single) .pf-dots {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-dot {
+    transition: none;
+  }
+}
+
