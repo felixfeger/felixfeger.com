@@ -25,7 +25,7 @@ window.SITE = {
   // ---- Footer social links -----------------------------------------
   // Pixelfed is added automatically once a username is set above.
   socials: [
-    { label: "Instagram", url: "https://www.instagram.com/felix_transit/" },
+    { label: "Pixelfed", url: "https://www.pixelfed.social/felix_traveler" },
     { label: "YouTube", url: "https://www.youtube.com/@felix_traveler" },
     { label: "GitHub", url: "https://github.com/felixfeger" },
     { label: "Linktree", url: "https://linktr.ee/felix_traveler" }
