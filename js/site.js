@@ -40,8 +40,8 @@ window.SITE = {
   socials: [
 
     {
-      label: "City Metro",
-      url: "https://citymetro.xyz"
+      label: "Mastodon",
+      url: "https://mastodon.social/@felix_traveler"
     },
 
     {
