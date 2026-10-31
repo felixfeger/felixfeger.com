@@ -1,18 +1,28 @@
+
 /* ==========================================================================
-   Felix Feger — personal site
-   Tokens: cream ground, deep-water teal accent, warm amber for City Metro
+   Felix Feger — Personal Website
+   Design: Warm cream, deep-water teal, warm amber
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
 
+
+/* ==========================================================================
+   GLOBAL VARIABLES
+   ========================================================================== */
+
 :root {
   --bg: #F5F1E8;
   --bg-raised: #ECE5D3;
+
   --ink: #3A362C;
   --ink-soft: #6B6355;
+
   --line: #D9D0BA;
+
   --teal: #3E6B6B;
   --teal-deep: #2C4D4D;
+
   --amber: #C9932E;
 
   --font-display: 'Quicksand', sans-serif;
@@ -22,9 +32,18 @@
   --radius: 4px;
 }
 
-* { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+/* ==========================================================================
+   RESET AND BASE STYLES
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
@@ -36,13 +55,29 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-img { max-width: 100%; display: block; }
+img {
+  max-width: 100%;
+  display: block;
+}
 
-a { color: var(--teal-deep); text-decoration: none; }
-a:hover { text-decoration: underline; }
-a:focus-visible, button:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+a {
+  color: var(--teal-deep);
+  text-decoration: none;
+}
 
-h1, h2, h3 {
+a:hover {
+  text-decoration: underline;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
   font-family: var(--font-display);
   font-weight: 700;
   color: var(--ink);
@@ -50,7 +85,9 @@ h1, h2, h3 {
   line-height: 1.15;
 }
 
-p { max-width: 62ch; }
+p {
+  max-width: 62ch;
+}
 
 .wrap {
   max-width: var(--max-w);
@@ -58,7 +95,10 @@ p { max-width: 62ch; }
   padding: 0 24px;
 }
 
-/* ---------- header / nav ---------- */
+
+/* ==========================================================================
+   HEADER AND NAVIGATION
+   ========================================================================== */
 
 .site-header {
   position: sticky;
@@ -84,7 +124,10 @@ p { max-width: 62ch; }
   font-size: 1.15rem;
   color: var(--ink);
 }
-.brand:hover { text-decoration: none; }
+
+.brand:hover {
+  text-decoration: none;
+}
 
 .brand-logo {
   height: 36px;
@@ -104,6 +147,7 @@ p { max-width: 62ch; }
   padding: 6px 2px;
   border-bottom: 2px solid transparent;
 }
+
 .nav-desktop a:hover,
 .nav-desktop a[aria-current="page"] {
   color: var(--ink);
@@ -122,6 +166,7 @@ p { max-width: 62ch; }
   justify-content: center;
   cursor: pointer;
 }
+
 .menu-toggle span,
 .menu-toggle span::before,
 .menu-toggle span::after {
@@ -133,8 +178,16 @@ p { max-width: 62ch; }
   position: relative;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
-.menu-toggle span::before { position: absolute; top: -6px; }
-.menu-toggle span::after { position: absolute; top: 6px; }
+
+.menu-toggle span::before {
+  position: absolute;
+  top: -6px;
+}
+
+.menu-toggle span::after {
+  position: absolute;
+  top: 6px;
+}
 
 .nav-mobile {
   display: none;
@@ -143,21 +196,43 @@ p { max-width: 62ch; }
   border-bottom: 1px solid var(--line);
   background: var(--bg);
 }
-.nav-mobile.open { display: flex; }
+
+.nav-mobile.open {
+  display: flex;
+}
+
 .nav-mobile a {
   padding: 14px 24px;
   color: var(--ink);
   font-weight: 500;
   border-top: 1px solid var(--line);
 }
-.nav-mobile a:hover { background: var(--bg-raised); text-decoration: none; }
 
-@media (max-width: 720px) {
-  .nav-desktop { display: none; }
-  .menu-toggle { display: inline-flex; }
+.nav-mobile a:hover {
+  background: var(--bg-raised);
+  text-decoration: none;
 }
 
-/* ---------- hero (welcome page) ---------- */
+@media (max-width: 720px) {
+  .nav-desktop {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 900px) {
+  .nav-desktop {
+    gap: 18px;
+  }
+}
+
+
+/* ==========================================================================
+   HERO — WELCOME PAGE
+   ========================================================================== */
 
 .hero {
   padding: 96px 24px 72px;
@@ -181,6 +256,11 @@ p { max-width: 62ch; }
   margin: 0 auto 32px;
 }
 
+
+/* ==========================================================================
+   BUTTONS
+   ========================================================================== */
+
 .btn {
   display: inline-block;
   border: 1.5px solid var(--ink);
@@ -192,15 +272,28 @@ p { max-width: 62ch; }
   background: transparent;
   cursor: pointer;
 }
+
 .btn:hover {
   background: var(--ink);
   color: var(--bg);
   text-decoration: none;
 }
-.btn-teal { border-color: var(--teal-deep); color: var(--teal-deep); }
-.btn-teal:hover { background: var(--teal-deep); color: #fff; }
 
-/* wave divider */
+.btn-teal {
+  border-color: var(--teal-deep);
+  color: var(--teal-deep);
+}
+
+.btn-teal:hover {
+  background: var(--teal-deep);
+  color: #fff;
+}
+
+
+/* ==========================================================================
+   WAVE DIVIDER
+   ========================================================================== */
+
 .wave-divider {
   display: block;
   width: 100%;
@@ -208,7 +301,10 @@ p { max-width: 62ch; }
   color: var(--bg-raised);
 }
 
-/* ---------- quick links (welcome page) ---------- */
+
+/* ==========================================================================
+   QUICK LINKS — WELCOME PAGE
+   ========================================================================== */
 
 .quick-links {
   background: var(--bg-raised);
@@ -221,45 +317,88 @@ p { max-width: 62ch; }
   gap: 18px;
 }
 
-@media (max-width: 720px) {
-  .quick-grid { grid-template-columns: 1fr; }
-}
-
 .quick-card {
   border: 1px solid var(--line);
   padding: 26px 22px;
   background: var(--bg);
 }
 
-.quick-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
-.quick-card p { color: var(--ink-soft); font-size: 0.92rem; margin: 0 0 14px; }
-.quick-card a { font-weight: 600; color: var(--teal-deep); font-size: 0.9rem; }
+.quick-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
 
-/* ---------- generic page header ---------- */
+.quick-card p {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin: 0 0 14px;
+}
+
+.quick-card a {
+  font-weight: 600;
+  color: var(--teal-deep);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ==========================================================================
+   GENERIC PAGE HEADER
+   ========================================================================== */
 
 .page-hero {
   padding: 64px 24px 40px;
   border-bottom: 1px solid var(--line);
 }
-.page-hero .eyebrow { color: var(--teal-deep); font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; }
-.page-hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); }
-.page-hero p { color: var(--ink-soft); font-size: 1.05rem; }
 
-section { padding: 56px 24px; }
-section + section { border-top: 1px solid var(--line); }
+.page-hero .eyebrow {
+  color: var(--teal-deep);
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
 
-/* ---------- travel page ---------- */
+.page-hero h1 {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+}
 
-.trip-block h2 { font-size: 1.5rem; }
-.trip-block .trip-meta { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 20px; }
+.page-hero p {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+}
+
+section {
+  padding: 56px 24px;
+}
+
+section + section {
+  border-top: 1px solid var(--line);
+}
+
+
+/* ==========================================================================
+   TRAVEL PAGE
+   ========================================================================== */
+
+.trip-block h2 {
+  font-size: 1.5rem;
+}
+
+.trip-block .trip-meta {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
 
 .gallery {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-}
-@media (max-width: 720px) {
-  .gallery { grid-template-columns: repeat(2, 1fr); }
 }
 
 .gallery button {
@@ -268,15 +407,25 @@ section + section { border-top: 1px solid var(--line); }
   background: none;
   cursor: zoom-in;
   overflow: hidden;
-  aspect-ratio: 4/3;
+  aspect-ratio: 4 / 3;
 }
+
 .gallery img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
-.gallery button:hover img { transform: scale(1.05); }
+
+.gallery button:hover img {
+  transform: scale(1.05);
+}
+
+@media (max-width: 720px) {
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 .lightbox {
   position: fixed;
@@ -288,8 +437,16 @@ section + section { border-top: 1px solid var(--line); }
   z-index: 100;
   padding: 24px;
 }
-.lightbox.open { display: flex; }
-.lightbox img { max-height: 88vh; max-width: 92vw; }
+
+.lightbox.open {
+  display: flex;
+}
+
+.lightbox img {
+  max-height: 88vh;
+  max-width: 92vw;
+}
+
 .lightbox-close {
   position: absolute;
   top: 20px;
@@ -304,23 +461,36 @@ section + section { border-top: 1px solid var(--line); }
   font-size: 1.1rem;
 }
 
-/* ---------- socials page ---------- */
+
+/* ==========================================================================
+   SOCIALS PAGE
+   ========================================================================== */
 
 .social-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 18px;
 }
-@media (max-width: 720px) {
-  .social-grid { grid-template-columns: 1fr; }
-}
+
 .social-card {
   border: 1px solid var(--line);
   background: var(--bg-raised);
   padding: 22px;
 }
-.social-card h3 { font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
-.social-card .handle { color: var(--ink-soft); font-size: 0.88rem; margin-bottom: 14px; }
+
+.social-card h3 {
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.social-card .handle {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin-bottom: 14px;
+}
+
 .embed-frame {
   width: 100%;
   min-height: 340px;
@@ -335,11 +505,31 @@ section + section { border-top: 1px solid var(--line); }
   padding: 20px;
 }
 
-/* ---------- city metro page ---------- */
+@media (max-width: 720px) {
+  .social-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
-.timeline { border-left: 2px solid var(--line); padding-left: 28px; }
-.timeline-item { position: relative; margin-bottom: 36px; }
-.timeline-item:last-child { margin-bottom: 0; }
+
+/* ==========================================================================
+   CITY METRO PAGE
+   ========================================================================== */
+
+.timeline {
+  border-left: 2px solid var(--line);
+  padding-left: 28px;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 36px;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
 .timeline-item::before {
   content: '';
   position: absolute;
@@ -350,36 +540,83 @@ section + section { border-top: 1px solid var(--line); }
   border-radius: 50%;
   background: var(--amber);
 }
-.timeline-item .year { font-family: var(--font-display); font-weight: 700; color: var(--teal-deep); }
+
+.timeline-item .year {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--teal-deep);
+}
 
 .metro-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 18px;
 }
-@media (max-width: 720px) { .metro-grid { grid-template-columns: 1fr; } }
+
 .metro-card {
   border-left: 3px solid var(--amber);
   background: var(--bg-raised);
   padding: 20px 22px;
 }
-.metro-card h3 { font-size: 1.02rem; }
-.metro-card p { color: var(--ink-soft); font-size: 0.92rem; margin: 0; }
 
-/* ---------- blog page ---------- */
+.metro-card h3 {
+  font-size: 1.02rem;
+}
 
-.post-list { display: flex; flex-direction: column; }
+.metro-card p {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .metro-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ==========================================================================
+   BLOG PAGE
+   ========================================================================== */
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+}
+
 .post-item {
   padding: 24px 0;
   border-top: 1px solid var(--line);
 }
-.post-item:first-child { border-top: none; }
-.post-item .date { color: var(--ink-soft); font-size: 0.85rem; }
-.post-item h2 { font-size: 1.25rem; margin: 4px 0 8px; }
-.post-item p { color: var(--ink-soft); }
-.post-item a.read-more { font-weight: 600; font-size: 0.9rem; }
 
-/* ---------- contact / records page ---------- */
+.post-item:first-child {
+  border-top: none;
+}
+
+.post-item .date {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.post-item h2 {
+  font-size: 1.25rem;
+  margin: 4px 0 8px;
+}
+
+.post-item p {
+  color: var(--ink-soft);
+}
+
+.post-item a.read-more {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+
+/* ==========================================================================
+   CONTACT / RECORDS PAGE
+   ========================================================================== */
 
 .contact-layout {
   display: grid;
@@ -387,17 +624,40 @@ section + section { border-top: 1px solid var(--line); }
   gap: 40px;
   align-items: start;
 }
-@media (max-width: 720px) { .contact-layout { grid-template-columns: 1fr; } }
-.contact-info .label { color: var(--ink-soft); font-size: 0.85rem; margin-bottom: 4px; }
-.contact-info .value { margin-bottom: 22px; font-weight: 500; }
+
+.contact-info .label {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.contact-info .value {
+  margin-bottom: 22px;
+  font-weight: 500;
+}
+
 .form-frame {
   border: 1px solid var(--line);
   min-height: 460px;
   background: var(--bg-raised);
 }
-.form-frame iframe { width: 100%; height: 460px; border: 0; }
 
-/* ---------- records password gate ---------- */
+.form-frame iframe {
+  width: 100%;
+  height: 460px;
+  border: 0;
+}
+
+@media (max-width: 720px) {
+  .contact-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ==========================================================================
+   RECORDS PASSWORD GATE
+   ========================================================================== */
 
 .gate-wrap {
   max-width: 420px;
@@ -405,6 +665,7 @@ section + section { border-top: 1px solid var(--line); }
   text-align: center;
   padding: 0 24px;
 }
+
 .gate-wrap input[type="password"] {
   width: 100%;
   padding: 12px 14px;
@@ -415,6 +676,7 @@ section + section { border-top: 1px solid var(--line); }
   box-sizing: border-box;
   text-align: center;
 }
+
 .gate-error {
   color: #8A2B2B;
   font-size: 0.9rem;
@@ -422,7 +684,10 @@ section + section { border-top: 1px solid var(--line); }
   margin-bottom: 8px;
 }
 
-/* ---------- footer ---------- */
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
 
 .site-footer {
   border-top: 1px solid var(--line);
@@ -432,17 +697,10 @@ section + section { border-top: 1px solid var(--line); }
   font-size: 0.85rem;
 }
 
-/* ---------- hidden attribute must always win ---------- */
 
-[hidden] { display: none !important; }
-
-/* ---------- 8-item nav: tighten spacing on mid-size screens ---------- */
-
-@media (max-width: 900px) {
-  .nav-desktop { gap: 18px; }
-}
-
-/* ---------- footer socials (injected by js/site.js) ---------- */
+/* ==========================================================================
+   FOOTER SOCIAL LINKS — INJECTED BY js/site.js
+   ========================================================================== */
 
 .footer-socials {
   display: flex;
@@ -451,122 +709,149 @@ section + section { border-top: 1px solid var(--line); }
   gap: 8px 22px;
   margin-bottom: 14px;
 }
+
 .footer-socials a {
   color: var(--ink-soft);
   font-weight: 500;
 }
+
 .footer-socials a:hover {
   color: var(--ink);
 }
 
-/* ---------- photos page (Pixelfed) ---------- */
 
-.pf-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-}
-.pf-item iframe,
-.pf-fallback iframe {
-  display: block;
-  width: 100%;
-  height: 600px;
-  border: 0;
-  background: var(--bg-raised);
-}
-.pf-fallback iframe { height: 900px; }
-.pf-fallback { display: block; }
-.pf-status {
-  text-align: center;
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-  margin: 24px auto 0;
-}
-.pf-more-wrap {
-  text-align: center;
-  margin-top: 16px;
-}
-/* =========================================
+/* ==========================================================================
    PIXELFED PHOTO GALLERY
-========================================= */
+   ========================================================================== */
+
+/* Main gallery grid */
 
 .pf-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
   width: 100%;
   align-items: start;
 }
 
+/* Individual photo card.
+   No fixed aspect ratio here because captions must fit below photos. */
+
 .pf-item {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-width: 0;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #eeeeee;
+  height: auto;
+  overflow: visible;
+  background: transparent;
+  border-radius: 0;
 }
+
+/* Photo container.
+   Cropping applies to the image only, not the caption. */
 
 .pf-photo-link {
   display: block;
+  position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
   overflow: hidden;
+  border-radius: 12px;
+  background: var(--bg-raised);
 }
+
+.pf-photo-link:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 4px;
+}
+
+/* Actual photo */
 
 .pf-item img {
   display: block;
   width: 100%;
   height: 100%;
+  max-width: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.25s ease;
+  transition: transform 0.3s ease;
 }
 
-/* Subtle hover effect */
+/* Image hover */
+
 @media (hover: hover) {
-  .pf-item:hover img {
+  .pf-photo-link:hover img {
     transform: scale(1.04);
   }
 }
 
-/* =========================================
-   TABLET
-========================================= */
+/* ==========================================================================
+   PIXELFED CAPTIONS AND DATES
+   ========================================================================== */
 
-@media (max-width: 900px) {
-  .pf-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
+/* Metadata container */
+
+.pf-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 12px 2px 8px;
 }
 
-/* =========================================
-   MOBILE
-========================================= */
+/* Post caption */
 
-@media (max-width: 600px) {
-  .pf-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-  }
+.pf-caption {
+  max-width: 100%;
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.94rem;
+  font-weight: 400;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
 
-  .pf-item {
-    width: 100%;
-    aspect-ratio: 4 / 5;
-    border-radius: 10px;
-  }
-
-  .pf-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  /* Limit extremely long captions while keeping the layout tidy. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
 }
 
-/* =========================================
+/* Publication date */
+
+.pf-date {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* ==========================================================================
+   PIXELFED STATUS AND LOAD MORE
+   ========================================================================== */
+
+.pf-status {
+  max-width: 100%;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin: 28px auto 0;
+}
+
+.pf-more-wrap {
+  text-align: center;
+  margin-top: 22px;
+}
+
+/* ==========================================================================
    PIXELFED FALLBACK IFRAME
-========================================= */
+   ========================================================================== */
 
 .pf-fallback {
   display: block;
@@ -575,6 +860,7 @@ section + section { border-top: 1px solid var(--line); }
   margin: 20px auto;
   overflow: hidden;
   border-radius: 12px;
+  background: var(--bg-raised);
 }
 
 .pf-fallback iframe {
@@ -586,7 +872,73 @@ section + section { border-top: 1px solid var(--line); }
   margin: 0;
 }
 
+
+/* ==========================================================================
+   TABLET RESPONSIVENESS
+   ========================================================================== */
+
+@media (max-width: 900px) {
+
+  /* Two photos per row on tablets. */
+
+  .pf-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+}
+
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS
+   ========================================================================== */
+
 @media (max-width: 600px) {
+
+  /* Exactly one photo per row. */
+
+  .pf-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .pf-item {
+    width: 100%;
+  }
+
+  /* Taller portrait crop on mobile. */
+
+  .pf-photo-link {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: 10px;
+  }
+
+  .pf-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Mobile caption spacing. */
+
+  .pf-meta {
+    padding: 10px 2px 4px;
+    gap: 6px;
+  }
+
+  .pf-caption {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+  }
+
+  .pf-date {
+    font-size: 0.78rem;
+  }
+
   .pf-fallback {
     border-radius: 8px;
   }
@@ -597,4 +949,61 @@ section + section { border-top: 1px solid var(--line); }
     min-height: 550px;
     max-height: 900px;
   }
+
+  .pf-status {
+    margin-top: 22px;
+  }
+
+}
+
+
+/* ==========================================================================
+   SMALL SCREEN ADJUSTMENTS
+   ========================================================================== */
+
+@media (max-width: 380px) {
+
+  .wrap {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .pf-grid {
+    gap: 20px;
+  }
+
+  .pf-caption {
+    font-size: 0.9rem;
+  }
+
+}
+
+
+/* ==========================================================================
+   ACCESSIBILITY AND GLOBAL OVERRIDES
+   ========================================================================== */
+
+/* Hidden elements must remain hidden. */
+
+[hidden] {
+  display: none !important;
+}
+
+/* Respect reduced-motion preferences. */
+
+@media (prefers-reduced-motion: reduce) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
 }
