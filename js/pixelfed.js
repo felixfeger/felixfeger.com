@@ -284,9 +284,12 @@ function createMedia(images, postLink) {
     if (images.length > 1) {
       const dot = document.createElement("button");
       dot.type = "button";
-      dot.className = "pf-dot";
-      dot.setAttribute("aria-label", `Show photo ${index + 1}`);
-      dot.setAttribute("aria-current", index === 0 ? "true" : "false");
+      dot.className = index === 0
+  ? "pf-dot is-active"
+  : "pf-dot";
+
+dot.setAttribute("aria-label", `Show photo ${index + 1}`);
+dot.setAttribute("aria-current", index === 0 ? "true" : "false");
 
       dot.addEventListener("click", () => {
         slide.scrollIntoView({
