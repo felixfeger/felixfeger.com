@@ -10,16 +10,18 @@
    /api/pixelfed/feed
 
    Features:
-   - Direct image rendering
-   - Automatic image cropping
-   - Responsive layout
-   - Multiple images per post
-   - Click to open original Pixelfed post
+   - Same-domain Cloudflare Pages Function
+   - Direct photo rendering
+   - Automatic image cropping (CSS)
+   - Responsive gallery
+   - One photo per row on mobile
+   - Multiple photos per post
+   - Original Pixelfed post links
+   - Post captions
+   - Publication dates
    - Lazy image loading
-   - XML parsing
+   - XML/Atom parsing
    - Error handling
-   - No OAuth or API account lookup
-   - No individual Pixelfed embeds
 
    ========================================================== */
 
@@ -59,11 +61,8 @@
 
   var base = "https://" + instance;
 
-  var ATOM_NAMESPACE =
-    "http://www.w3.org/2005/Atom";
-
-  var MEDIA_NAMESPACE =
-    "http://search.yahoo.com/mrss/";
+  var ATOM_NAMESPACE = "http://www.w3.org/2005/Atom";
+  var MEDIA_NAMESPACE = "http://search.yahoo.com/mrss/";
 
 
   // ========================================================
@@ -137,6 +136,30 @@
 
 
   // ========================================================
+  // CONVERT HTML INTO PLAIN TEXT
+  // ========================================================
+
+  function htmlToText(html) {
+    if (!html) return "";
+
+    var doc = new DOMParser().parseFromString(
+      html,
+      "text/html"
+    );
+
+    doc.querySelectorAll(
+      "script, style, img, video, audio, iframe"
+    ).forEach(function (element) {
+      element.remove();
+    });
+
+    return (doc.body.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+
+  // ========================================================
   // GET ATOM POST CONTENT
   // ========================================================
 
@@ -147,7 +170,6 @@
 
     var type = content.getAttribute("type") || "text";
 
-    // HTML content is normally escaped or stored in CDATA.
     if (
       type === "html" ||
       type === "text" ||
@@ -156,7 +178,6 @@
       return content.textContent || "";
     }
 
-    // Handle XHTML content.
     if (type === "xhtml") {
       var serializer = new XMLSerializer();
 
@@ -168,6 +189,75 @@
     }
 
     return content.textContent || "";
+  }
+
+
+  // ========================================================
+  // GET POST CAPTION
+  // ========================================================
+
+  function getCaption(entry) {
+
+    // Try the Atom summary first.
+    var summary = getText(entry, "summary");
+
+    var caption = htmlToText(summary);
+
+    if (caption) {
+      return caption;
+    }
+
+    // Fall back to the full post content.
+    var content = getContentHTML(entry);
+
+    caption = htmlToText(content);
+
+    if (caption) {
+      return caption;
+    }
+
+    return "";
+  }
+
+
+  // ========================================================
+  // GET PUBLICATION DATE
+  // ========================================================
+
+  function getEntryDate(entry) {
+
+    // Prefer the original publication date.
+    // Use updated only when published is unavailable.
+    var raw =
+      getText(entry, "published") ||
+      getText(entry, "updated");
+
+    if (!raw) {
+      return {
+        value: "",
+        label: ""
+      };
+    }
+
+    var date = new Date(raw);
+
+    if (isNaN(date.getTime())) {
+      return {
+        value: "",
+        label: ""
+      };
+    }
+
+    return {
+      value: date.toISOString(),
+
+      // Format using the visitor's local timezone.
+      label: new Intl.DateTimeFormat(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      }).format(date)
+    };
   }
 
 
@@ -193,8 +283,9 @@
       }
     }
 
+
     // ------------------------------------------------------
-    // 1. Extract images embedded in Atom HTML content.
+    // 1. Extract images from Atom HTML content.
     // ------------------------------------------------------
 
     var html = getContentHTML(entry);
@@ -209,17 +300,24 @@
         htmlDoc.querySelectorAll("img");
 
       imageElements.forEach(function (image) {
+
         var src =
           image.getAttribute("src") ||
           image.getAttribute("data-src") ||
           image.getAttribute("data-original");
 
-        // Support responsive image source sets.
+        // Try responsive image sources.
         if (!src) {
           var srcset = image.getAttribute("srcset");
 
           if (srcset) {
-            src = srcset.split(",")[0].trim().split(/\s+/)[0];
+            var candidates = srcset
+              .split(",")
+              .map(function (item) {
+                return item.trim().split(/\s+/)[0];
+              });
+
+            src = candidates[candidates.length - 1];
           }
         }
 
@@ -227,11 +325,13 @@
           src,
           image.getAttribute("alt") || ""
         );
+
       });
     }
 
+
     // ------------------------------------------------------
-    // 2. Extract Media RSS content.
+    // 2. Extract Media RSS images.
     // ------------------------------------------------------
 
     var mediaContent = entry.getElementsByTagNameNS(
@@ -240,6 +340,7 @@
     );
 
     Array.from(mediaContent).forEach(function (media) {
+
       var type = media.getAttribute("type") || "";
       var medium = media.getAttribute("medium") || "";
 
@@ -252,32 +353,41 @@
           media.getAttribute("title") || ""
         );
       }
+
     });
 
+
     // ------------------------------------------------------
-    // 3. Extract Media RSS thumbnails if necessary.
+    // 3. Extract thumbnails if no full images were found.
     // ------------------------------------------------------
 
     if (!images.length) {
+
       var thumbnails = entry.getElementsByTagNameNS(
         MEDIA_NAMESPACE,
         "thumbnail"
       );
 
       Array.from(thumbnails).forEach(function (thumbnail) {
+
         addImage(
           thumbnail.getAttribute("url"),
           thumbnail.getAttribute("title") || ""
         );
+
       });
+
     }
 
+
     // ------------------------------------------------------
-    // 4. Extract Atom enclosure links if necessary.
+    // 4. Extract image enclosure links.
     // ------------------------------------------------------
 
     if (!images.length) {
+
       getChildren(entry, "link").forEach(function (link) {
+
         var rel = link.getAttribute("rel") || "";
         var type = link.getAttribute("type") || "";
 
@@ -285,9 +395,14 @@
           rel === "enclosure" &&
           type.startsWith("image/")
         ) {
-          addImage(link.getAttribute("href"), "");
+          addImage(
+            link.getAttribute("href"),
+            ""
+          );
         }
+
       });
+
     }
 
     return images;
@@ -295,25 +410,32 @@
 
 
   // ========================================================
-  // GET ORIGINAL POST URL
+  // GET ORIGINAL PIXELFED POST URL
   // ========================================================
 
   function getPostURL(entry) {
+
     var links = getChildren(entry, "link");
 
     for (var i = 0; i < links.length; i++) {
+
       var link = links[i];
 
       var rel = link.getAttribute("rel") || "alternate";
 
       if (rel === "alternate") {
-        var url = safeURL(link.getAttribute("href"));
+
+        var url = safeURL(
+          link.getAttribute("href")
+        );
 
         if (url) return url;
       }
+
     }
 
     var id = getText(entry, "id");
+
     var idURL = safeURL(id);
 
     if (idURL && /^https?:/.test(id)) {
@@ -325,47 +447,30 @@
 
 
   // ========================================================
-  // GET POST CAPTION
-  // ========================================================
-
-  function getCaption(entry) {
-    var summary = getText(entry, "summary");
-    var title = getText(entry, "title");
-
-    var caption = summary || title;
-
-    if (!caption) {
-      var html = getContentHTML(entry);
-
-      if (html) {
-        var doc = new DOMParser().parseFromString(
-          html,
-          "text/html"
-        );
-
-        caption = doc.body.textContent.trim();
-      }
-    }
-
-    return caption
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-
-  // ========================================================
   // CREATE PHOTO TILE
   // ========================================================
 
-  function createPhoto(imageData, postURL, caption) {
+  function createPhoto(imageData, postURL, caption, dateInfo) {
+
     if (loadedImages.has(imageData.url)) {
       return;
     }
 
     loadedImages.add(imageData.url);
 
+
+    // ------------------------------------------------------
+    // PHOTO CARD
+    // ------------------------------------------------------
+
     var item = document.createElement("article");
+
     item.className = "pf-item";
+
+
+    // ------------------------------------------------------
+    // PHOTO LINK
+    // ------------------------------------------------------
 
     var link = document.createElement("a");
 
@@ -373,6 +478,16 @@
     link.href = postURL;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
+
+    link.setAttribute(
+      "aria-label",
+      "View this photo on Pixelfed"
+    );
+
+
+    // ------------------------------------------------------
+    // IMAGE
+    // ------------------------------------------------------
 
     var image = document.createElement("img");
 
@@ -387,19 +502,79 @@
     image.decoding = "async";
 
     image.addEventListener("error", function () {
+
       item.remove();
 
       photoCount--;
 
       loadedImages.delete(imageData.url);
+
     });
 
     link.appendChild(image);
+
     item.appendChild(link);
+
+
+    // ------------------------------------------------------
+    // CAPTION AND DATE CONTAINER
+    // ------------------------------------------------------
+
+    var meta = document.createElement("div");
+
+    meta.className = "pf-meta";
+
+
+    // ------------------------------------------------------
+    // CAPTION
+    // ------------------------------------------------------
+
+    if (caption) {
+
+      var captionElement = document.createElement("p");
+
+      captionElement.className = "pf-caption";
+
+      captionElement.textContent = caption;
+
+      meta.appendChild(captionElement);
+
+    }
+
+
+    // ------------------------------------------------------
+    // DATE
+    // ------------------------------------------------------
+
+    if (dateInfo && dateInfo.label) {
+
+      var dateElement = document.createElement("time");
+
+      dateElement.className = "pf-date";
+
+      dateElement.dateTime = dateInfo.value;
+
+      dateElement.textContent = dateInfo.label;
+
+      meta.appendChild(dateElement);
+
+    }
+
+
+    // Only add metadata when a caption or date exists.
+    if (meta.childNodes.length) {
+      item.appendChild(meta);
+    }
+
+
+    // ------------------------------------------------------
+    // ADD TO GALLERY
+    // ------------------------------------------------------
 
     feed.appendChild(item);
 
     photoCount++;
+
   }
 
 
@@ -408,27 +583,47 @@
   // ========================================================
 
   function renderEntries(entries) {
+
     entries.forEach(function (entry) {
+
       var images = extractImages(entry);
 
       if (!images.length) return;
 
       var postURL = getPostURL(entry);
+
       var caption = getCaption(entry);
+
+      var dateInfo = getEntryDate(entry);
 
       var added = false;
 
+
+      // Each image receives its own tile.
       images.forEach(function (image) {
+
         if (!loadedImages.has(image.url)) {
-          createPhoto(image, postURL, caption);
+
+          createPhoto(
+            image,
+            postURL,
+            caption,
+            dateInfo
+          );
+
           added = true;
+
         }
+
       });
+
 
       if (added) {
         postCount++;
       }
+
     });
+
   }
 
 
@@ -437,24 +632,33 @@
   // ========================================================
 
   function loadFeed() {
+
     setStatus("Loading photos…");
 
     fetch(apiBase, {
       method: "GET",
+
       headers: {
         Accept: "application/atom+xml, application/xml, text/xml"
       }
     })
+
       .then(function (response) {
+
         if (!response.ok) {
+
           throw new Error(
             "Feed request failed: HTTP " + response.status
           );
+
         }
 
         return response.text();
+
       })
+
       .then(function (xml) {
+
         var parser = new DOMParser();
 
         var documentXML = parser.parseFromString(
@@ -462,7 +666,11 @@
           "application/xml"
         );
 
-        // Check for XML parsing errors.
+
+        // --------------------------------------------------
+        // CHECK XML PARSING
+        // --------------------------------------------------
+
         var parserError =
           documentXML.getElementsByTagName("parsererror")[0];
 
@@ -470,13 +678,26 @@
           throw new Error("Invalid Atom XML received.");
         }
 
+
+        // --------------------------------------------------
+        // CHECK FEED ROOT
+        // --------------------------------------------------
+
         var root = documentXML.documentElement;
 
         if (!root || root.localName !== "feed") {
-          throw new Error("The response is not an Atom feed.");
+
+          throw new Error(
+            "The response is not a valid Atom feed."
+          );
+
         }
 
-        // Obtain all Atom entries.
+
+        // --------------------------------------------------
+        // GET ENTRIES
+        // --------------------------------------------------
+
         var entries = Array.from(
           documentXML.getElementsByTagNameNS(
             ATOM_NAMESPACE,
@@ -484,27 +705,47 @@
           )
         );
 
+
         // Fallback for feeds without namespace recognition.
         if (!entries.length) {
+
           entries = Array.from(
             documentXML.getElementsByTagName("entry")
           );
+
         }
 
+
         if (!entries.length) {
+
           setStatus("No recent posts were found.");
+
           return;
+
         }
+
+
+        // --------------------------------------------------
+        // RENDER PHOTOS
+        // --------------------------------------------------
 
         renderEntries(entries);
 
+
+        // --------------------------------------------------
+        // UPDATE STATUS
+        // --------------------------------------------------
+
         if (photoCount === 0) {
+
           setStatus(
             "No photos could be extracted from the feed."
           );
 
           return;
+
         }
+
 
         setStatus(
           "Showing " +
@@ -513,8 +754,11 @@
           postCount +
           " recent posts."
         );
+
       })
+
       .catch(function (error) {
+
         console.error(
           "Pixelfed gallery error:",
           error
@@ -524,7 +768,9 @@
           "Unable to load Pixelfed photos. " +
           (error.message || "Please try again later.")
         );
+
       });
+
   }
 
 
@@ -532,28 +778,54 @@
   // INITIALIZE
   // ========================================================
 
-  if (!username || username === "YOUR_USERNAME") {
-    setStatus("Pixelfed is not configured in js/site.js.");
+  if (
+    !username ||
+    username === "YOUR_USERNAME"
+  ) {
+
+    setStatus(
+      "Pixelfed is not configured in js/site.js."
+    );
+
     return;
+
   }
 
-  // Profile link.
+
+  // --------------------------------------------------------
+  // PROFILE LINK
+  // --------------------------------------------------------
+
   if (profileLink) {
+
     profileLink.href =
       base + "/@" + encodeURIComponent(username);
 
     profileLink.target = "_blank";
+
     profileLink.rel = "noopener noreferrer";
+
     profileLink.hidden = false;
+
   }
 
-  // Atom feeds are a recent-post source rather than a
-  // paginated archive, so hide the old Load More button.
+
+  // --------------------------------------------------------
+  // HIDE OLD LOAD MORE BUTTON
+  // --------------------------------------------------------
+
+  // Atom feeds provide a limited recent-post collection,
+  // rather than the paginated JSON API.
+
   if (moreBtn) {
     moreBtn.hidden = true;
   }
 
-  // Start gallery.
+
+  // --------------------------------------------------------
+  // START GALLERY
+  // --------------------------------------------------------
+
   loadFeed();
 
 })();
