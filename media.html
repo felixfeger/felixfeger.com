@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photos — Felix Feger</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="brand"><img src="logo.png" alt="Office of Felix Feger" class="brand-logo"></a>
+    <nav class="nav-desktop" aria-label="Primary">
+      <a href="index.html">Welcome</a>
+      <a href="travel.html">Travel</a>
+      <a href="photos.html" aria-current="page">Photos</a>
+      <a href="media.html">Media</a>
+      <a href="city-metro.html">City Metro</a>
+      <a href="https://flights.felixfeger.com">Flights</a>
+      <a href="https://blog.felixfeger.com">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
+  </div>
+  <nav class="nav-mobile" aria-label="Mobile">
+    <a href="index.html">Welcome</a>
+    <a href="travel.html">Travel</a>
+    <a href="photos.html">Photos</a>
+    <a href="media.html">Media</a>
+    <a href="city-metro.html">City Metro</a>
+    <a href="https://flights.felixfeger.com">Flights</a>
+    <a href="https://blog.felixfeger.com">Blog</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow">Photos</div>
+      <h1>From Pixelfed</h1>
+      <p>Every post, pulled in automatically from my Pixelfed profile. <a id="pixelfed-profile-link" href="#" hidden>Open on Pixelfed &rsaquo;</a></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div id="pixelfed-feed" class="pf-grid"></div>
+      <p id="pixelfed-status" class="pf-status" role="status">Loading posts…</p>
+      <div class="pf-more-wrap">
+        <button id="pixelfed-more" class="btn btn-teal" type="button" hidden>Load more</button>
+      </div>
+      <noscript><p class="pf-status">This page needs JavaScript to show my Pixelfed posts.</p></noscript>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">Copyright 2026 by Felix Feger</div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/site.js"></script>
+<script src="js/pixelfed.js"></script>
+<script src='https://www.noupe.com/embed/01a1903b0f0070008fc9191dfc98971be058.js'></script>
+</body>
+</html>
