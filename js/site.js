@@ -39,6 +39,10 @@ window.SITE = {
 
   socials: [
     {
+      label: "City Metro",
+      url: "https://citymetro.xyz"
+    },
+    {
       label: "YouTube",
       url: "https://www.youtube.com/@felix_traveler"
     },
