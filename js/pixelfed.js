@@ -235,54 +235,115 @@
      Create image carousel
      ------------------------------------------------------------------------ */
 
-  function createMedia(images, postLink) {
-    const media = document.createElement("div");
-    media.className = "pf-post-media";
+  
+function createMedia(images, postLink) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "pf-media-wrapper";
 
-    if (images.length === 1) {
-      media.classList.add("pf-single");
-    }
+  const media = document.createElement("div");
+  media.className = "pf-post-media";
 
-    images.forEach((imageUrl, index) => {
-      const slide = document.createElement("div");
-      slide.className = "pf-slide";
+  if (images.length === 1) {
+    media.classList.add("pf-single");
+  }
 
-      const link = document.createElement("a");
-      link.className = "pf-photo-link";
-      link.href = postLink;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.setAttribute(
-        "aria-label",
-        `Open Pixelfed post, photo ${index + 1} of ${images.length}`
-      );
+  const dots = document.createElement("div");
+  dots.className = "pf-dots";
+  dots.setAttribute("aria-label", "Photo navigation");
 
-      const image = document.createElement("img");
-      image.src = imageUrl;
-      image.alt = `Pixelfed post photo ${index + 1}`;
-      image.loading = "lazy";
-      image.decoding = "async";
+  const dotButtons = [];
 
-      image.addEventListener("error", () => {
-        slide.classList.add("pf-image-error");
-      });
+  images.forEach((imageUrl, index) => {
+    const slide = document.createElement("div");
+    slide.className = "pf-slide";
 
-      link.appendChild(image);
-      slide.appendChild(link);
-      media.appendChild(slide);
+    const link = document.createElement("a");
+    link.className = "pf-photo-link";
+    link.href = postLink;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.setAttribute(
+      "aria-label",
+      `Open Pixelfed post, photo ${index + 1} of ${images.length}`
+    );
+
+    const image = document.createElement("img");
+    image.src = imageUrl;
+    image.alt = `Pixelfed post photo ${index + 1}`;
+    image.loading = "lazy";
+    image.decoding = "async";
+
+    image.addEventListener("error", () => {
+      slide.classList.add("pf-image-error");
     });
 
+    link.appendChild(image);
+    slide.appendChild(link);
+    media.appendChild(slide);
+
     if (images.length > 1) {
-      const hint = document.createElement("span");
-      hint.className = "pf-swipe-hint";
-      hint.textContent = `${images.length} photos · Swipe to view`;
-      hint.setAttribute("aria-hidden", "true");
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "pf-dot";
+      dot.setAttribute("aria-label", `Show photo ${index + 1}`);
+      dot.setAttribute("aria-current", index === 0 ? "true" : "false");
 
-      media.appendChild(hint);
+      dot.addEventListener("click", () => {
+        slide.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "start"
+        });
+      });
+
+      dots.appendChild(dot);
+      dotButtons.push(dot);
     }
+  });
 
-    return media;
+  if (images.length > 1) {
+    let scrollFrame = null;
+
+    media.addEventListener("scroll", () => {
+      if (scrollFrame) {
+        cancelAnimationFrame(scrollFrame);
+      }
+
+      scrollFrame = requestAnimationFrame(() => {
+        const slides = Array.from(media.querySelectorAll(".pf-slide"));
+        const mediaRect = media.getBoundingClientRect();
+        let activeIndex = 0;
+        let smallestDistance = Infinity;
+
+        slides.forEach((slide, index) => {
+          const distance = Math.abs(
+            slide.getBoundingClientRect().left - mediaRect.left
+          );
+
+          if (distance < smallestDistance) {
+            smallestDistance = distance;
+            activeIndex = index;
+          }
+        });
+
+        dotButtons.forEach((dot, index) => {
+          const active = index === activeIndex;
+          dot.classList.toggle("is-active", active);
+          dot.setAttribute("aria-current", active ? "true" : "false");
+        });
+
+        scrollFrame = null;
+      });
+    });
+
+    wrapper.appendChild(media);
+    wrapper.appendChild(dots);
+  } else {
+    wrapper.appendChild(media);
   }
+
+  return wrapper;
+}
 
   /* ------------------------------------------------------------------------
      Create one complete post card
