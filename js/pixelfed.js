@@ -420,30 +420,29 @@
      Render visible posts
      ------------------------------------------------------------------------ */
 
-  function renderPosts() {
-    feedElement.replaceChildren();
+  
+function renderPosts() {
+  feedElement.replaceChildren();
 
-    const visible = allPosts.slice(0, visiblePosts);
+  const visible = allPosts.slice(0, visiblePosts);
 
-    visible.forEach((post) => {
-      feedElement.appendChild(post);
-    });
+  visible.forEach((post) => {
+    feedElement.appendChild(post);
+  });
 
-    if (moreButton) {
-      const hasMore = visiblePosts < allPosts.length;
+  if (moreButton) {
+    const hasMore = visiblePosts < allPosts.length;
 
-      moreButton.hidden = !hasMore;
+    moreButton.hidden = !hasMore;
 
-      if (hasMore) {
-        const remaining = allPosts.length - visiblePosts;
-
-        moreButton.textContent = `Load more (${remaining} remaining)`;
-      }
+    if (hasMore) {
+      const remaining = allPosts.length - visiblePosts;
+      moreButton.textContent = `Load more (${remaining} remaining)`;
     }
-
-    setStatus("", false);
   }
 
+  setStatus("", false);
+}
   /* ------------------------------------------------------------------------
      Load feed
      ------------------------------------------------------------------------ */
