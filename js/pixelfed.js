@@ -1,12 +1,15 @@
 
 /* ==========================================================================
    Felix Feger — Pixelfed Gallery
-   Groups photos by post and supports swipeable multi-image galleries.
-   Uses the same-domain Cloudflare Pages Function proxy.
+   Grouped posts, swipeable carousels, navigation dots and Load More.
    ========================================================================== */
 
 (function () {
   "use strict";
+
+  /* ------------------------------------------------------------------------
+     Configuration
+     ------------------------------------------------------------------------ */
 
   const config = window.SITE?.pixelfed || {};
 
@@ -22,6 +25,11 @@
 
   const feedUrl = `${apiBase}/feed`;
   const profileUrl = `https://${instance}/@${username}`;
+
+  const POSTS_PER_PAGE = 3;
+
+  let allPosts = [];
+  let visiblePosts = POSTS_PER_PAGE;
 
   /* ------------------------------------------------------------------------
      Helpers
@@ -103,9 +111,7 @@
       images.push(normalized);
     }
 
-    /*
-     * Extract images from HTML embedded in Atom content or summary.
-     */
+    // Extract images from embedded HTML.
     ["content", "summary"].forEach((selector) => {
       const element = getFirst(entry, selector);
       if (!element) return;
@@ -131,9 +137,7 @@
       });
     });
 
-    /*
-     * Extract ActivityPub / Media RSS image elements.
-     */
+    // Extract ActivityPub / Media RSS image elements.
     getElements(entry, "*").forEach((element) => {
       const name = (
         element.localName ||
@@ -141,6 +145,7 @@
       ).toLowerCase();
 
       const type = element.getAttribute("type") || "";
+
       const url =
         element.getAttribute("url") ||
         element.getAttribute("href");
@@ -154,9 +159,7 @@
       }
     });
 
-    /*
-     * Extract image enclosures and media links.
-     */
+    // Extract image enclosures and media links.
     getElements(entry, "link").forEach((link) => {
       const rel = (link.getAttribute("rel") || "").toLowerCase();
       const type = link.getAttribute("type") || "";
@@ -224,129 +227,137 @@
     const summary = getEntryText(entry, "summary");
     const content = getEntryText(entry, "content");
 
-    const caption = cleanText(summary || content);
-
-    if (!caption) return "";
-
-    return caption;
+    return cleanText(summary || content);
   }
 
   /* ------------------------------------------------------------------------
-     Create image carousel
+     Create image carousel with navigation dots
      ------------------------------------------------------------------------ */
 
-  
-function createMedia(images, postLink) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "pf-media-wrapper";
+  function createMedia(images, postLink) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "pf-media-wrapper";
 
-  const media = document.createElement("div");
-  media.className = "pf-post-media";
+    const media = document.createElement("div");
+    media.className = "pf-post-media";
 
-  if (images.length === 1) {
-    media.classList.add("pf-single");
-  }
+    if (images.length === 1) {
+      media.classList.add("pf-single");
+    }
 
-  const dots = document.createElement("div");
-  dots.className = "pf-dots";
-  dots.setAttribute("aria-label", "Photo navigation");
+    const dots = document.createElement("div");
+    dots.className = "pf-dots";
+    dots.setAttribute("aria-label", "Photo navigation");
 
-  const dotButtons = [];
+    const dotButtons = [];
 
-  images.forEach((imageUrl, index) => {
-    const slide = document.createElement("div");
-    slide.className = "pf-slide";
+    images.forEach((imageUrl, index) => {
+      const slide = document.createElement("div");
+      slide.className = "pf-slide";
 
-    const link = document.createElement("a");
-    link.className = "pf-photo-link";
-    link.href = postLink;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.setAttribute(
-      "aria-label",
-      `Open Pixelfed post, photo ${index + 1} of ${images.length}`
-    );
+      const link = document.createElement("a");
+      link.className = "pf-photo-link";
+      link.href = postLink;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
 
-    const image = document.createElement("img");
-    image.src = imageUrl;
-    image.alt = `Pixelfed post photo ${index + 1}`;
-    image.loading = "lazy";
-    image.decoding = "async";
+      link.setAttribute(
+        "aria-label",
+        `Open Pixelfed post, photo ${index + 1} of ${images.length}`
+      );
 
-    image.addEventListener("error", () => {
-      slide.classList.add("pf-image-error");
+      const image = document.createElement("img");
+      image.src = imageUrl;
+      image.alt = `Pixelfed post photo ${index + 1}`;
+      image.loading = "lazy";
+      image.decoding = "async";
+
+      image.addEventListener("error", () => {
+        slide.classList.add("pf-image-error");
+      });
+
+      link.appendChild(image);
+      slide.appendChild(link);
+      media.appendChild(slide);
+
+      if (images.length > 1) {
+        const dot = document.createElement("button");
+
+        dot.type = "button";
+        dot.className = index === 0
+          ? "pf-dot is-active"
+          : "pf-dot";
+
+        dot.setAttribute("aria-label", `Show photo ${index + 1}`);
+        dot.setAttribute(
+          "aria-current",
+          index === 0 ? "true" : "false"
+        );
+
+        dot.addEventListener("click", () => {
+          slide.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "start"
+          });
+        });
+
+        dots.appendChild(dot);
+        dotButtons.push(dot);
+      }
     });
-
-    link.appendChild(image);
-    slide.appendChild(link);
-    media.appendChild(slide);
 
     if (images.length > 1) {
-      const dot = document.createElement("button");
-      dot.type = "button";
-      dot.className = index === 0
-  ? "pf-dot is-active"
-  : "pf-dot";
+      let scrollFrame = null;
 
-dot.setAttribute("aria-label", `Show photo ${index + 1}`);
-dot.setAttribute("aria-current", index === 0 ? "true" : "false");
+      media.addEventListener("scroll", () => {
+        if (scrollFrame) {
+          cancelAnimationFrame(scrollFrame);
+        }
 
-      dot.addEventListener("click", () => {
-        slide.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "start"
-        });
-      });
-
-      dots.appendChild(dot);
-      dotButtons.push(dot);
-    }
-  });
-
-  if (images.length > 1) {
-    let scrollFrame = null;
-
-    media.addEventListener("scroll", () => {
-      if (scrollFrame) {
-        cancelAnimationFrame(scrollFrame);
-      }
-
-      scrollFrame = requestAnimationFrame(() => {
-        const slides = Array.from(media.querySelectorAll(".pf-slide"));
-        const mediaRect = media.getBoundingClientRect();
-        let activeIndex = 0;
-        let smallestDistance = Infinity;
-
-        slides.forEach((slide, index) => {
-          const distance = Math.abs(
-            slide.getBoundingClientRect().left - mediaRect.left
+        scrollFrame = requestAnimationFrame(() => {
+          const slides = Array.from(
+            media.querySelectorAll(".pf-slide")
           );
 
-          if (distance < smallestDistance) {
-            smallestDistance = distance;
-            activeIndex = index;
-          }
-        });
+          const mediaRect = media.getBoundingClientRect();
 
-        dotButtons.forEach((dot, index) => {
-          const active = index === activeIndex;
-          dot.classList.toggle("is-active", active);
-          dot.setAttribute("aria-current", active ? "true" : "false");
-        });
+          let activeIndex = 0;
+          let smallestDistance = Infinity;
 
-        scrollFrame = null;
+          slides.forEach((slide, index) => {
+            const distance = Math.abs(
+              slide.getBoundingClientRect().left - mediaRect.left
+            );
+
+            if (distance < smallestDistance) {
+              smallestDistance = distance;
+              activeIndex = index;
+            }
+          });
+
+          dotButtons.forEach((dot, index) => {
+            const active = index === activeIndex;
+
+            dot.classList.toggle("is-active", active);
+            dot.setAttribute(
+              "aria-current",
+              active ? "true" : "false"
+            );
+          });
+
+          scrollFrame = null;
+        });
       });
-    });
 
-    wrapper.appendChild(media);
-    wrapper.appendChild(dots);
-  } else {
-    wrapper.appendChild(media);
+      wrapper.appendChild(media);
+      wrapper.appendChild(dots);
+    } else {
+      wrapper.appendChild(media);
+    }
+
+    return wrapper;
   }
-
-  return wrapper;
-}
 
   /* ------------------------------------------------------------------------
      Create one complete post card
@@ -390,6 +401,7 @@ dot.setAttribute("aria-current", index === 0 ? "true" : "false");
 
     if (!caption && !date) {
       const fallback = document.createElement("a");
+
       fallback.className = "pf-date";
       fallback.href = postLink;
       fallback.target = "_blank";
@@ -402,6 +414,34 @@ dot.setAttribute("aria-current", index === 0 ? "true" : "false");
     article.appendChild(metadata);
 
     return article;
+  }
+
+  /* ------------------------------------------------------------------------
+     Render visible posts
+     ------------------------------------------------------------------------ */
+
+  function renderPosts() {
+    feedElement.replaceChildren();
+
+    const visible = allPosts.slice(0, visiblePosts);
+
+    visible.forEach((post) => {
+      feedElement.appendChild(post);
+    });
+
+    if (moreButton) {
+      const hasMore = visiblePosts < allPosts.length;
+
+      moreButton.hidden = !hasMore;
+
+      if (hasMore) {
+        const remaining = allPosts.length - visiblePosts;
+
+        moreButton.textContent = `Load more (${remaining} remaining)`;
+      }
+    }
+
+    setStatus("", false);
   }
 
   /* ------------------------------------------------------------------------
@@ -431,7 +471,9 @@ dot.setAttribute("aria-current", index === 0 ? "true" : "false");
       }
 
       const xmlText = await response.text();
+
       const parser = new DOMParser();
+
       const xml = parser.parseFromString(
         xmlText,
         "application/xml"
@@ -443,35 +485,41 @@ dot.setAttribute("aria-current", index === 0 ? "true" : "false");
 
       const entries = getElements(xml, "entry");
 
-      feedElement.replaceChildren();
-
-      let postCount = 0;
+      allPosts = [];
 
       entries.forEach((entry) => {
         const post = createPost(entry);
 
         if (post) {
-          feedElement.appendChild(post);
-          postCount++;
+          allPosts.push(post);
         }
       });
 
-      if (postCount === 0) {
+      visiblePosts = POSTS_PER_PAGE;
+
+      if (allPosts.length === 0) {
         setStatus(
-          "No photo posts were found. Visit my Pixelfed profile to see more.",
-          true
+          "No photo posts were found. Visit my Pixelfed profile to see more."
         );
 
         const profileLink = document.createElement("a");
+
         profileLink.href = profileUrl;
         profileLink.target = "_blank";
         profileLink.rel = "noopener noreferrer";
         profileLink.textContent = "View Pixelfed profile";
 
-        statusElement?.appendChild(document.createTextNode(" "));
+        statusElement?.appendChild(
+          document.createTextNode(" ")
+        );
+
         statusElement?.appendChild(profileLink);
+
+        if (moreButton) {
+          moreButton.hidden = true;
+        }
       } else {
-        setStatus("", false);
+        renderPosts();
       }
 
     } catch (error) {
@@ -485,6 +533,21 @@ dot.setAttribute("aria-current", index === 0 ? "true" : "false");
     } finally {
       feedElement.setAttribute("aria-busy", "false");
     }
+  }
+
+  /* ------------------------------------------------------------------------
+     Load More button
+     ------------------------------------------------------------------------ */
+
+  if (moreButton) {
+    moreButton.addEventListener("click", () => {
+      visiblePosts = Math.min(
+        visiblePosts + POSTS_PER_PAGE,
+        allPosts.length
+      );
+
+      renderPosts();
+    });
   }
 
   /* ------------------------------------------------------------------------
