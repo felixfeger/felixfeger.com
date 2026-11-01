@@ -1,15 +1,13 @@
 
 /* ==========================================================================
    Felix Feger — Pixelfed Gallery
-   Grouped posts, swipeable carousels, navigation dots and Load More.
+   Grouped posts, swipe carousels, navigation dots, Load More / Show Less.
    ========================================================================== */
 
 (function () {
   "use strict";
 
-  /* ------------------------------------------------------------------------
-     Configuration
-     ------------------------------------------------------------------------ */
+  /* CONFIGURATION */
 
   const config = window.SITE?.pixelfed || {};
 
@@ -29,11 +27,9 @@
   const POSTS_PER_PAGE = 3;
 
   let allPosts = [];
-  let visiblePosts = POSTS_PER_PAGE;
+  let showingAll = false;
 
-  /* ------------------------------------------------------------------------
-     Helpers
-     ------------------------------------------------------------------------ */
+  /* HELPERS */
 
   function setStatus(message, show = true) {
     if (!statusElement) return;
@@ -61,9 +57,7 @@
 
   function getEntryText(entry, selector) {
     const element = getFirst(entry, selector);
-    if (!element) return "";
-
-    return element.textContent || "";
+    return element ? element.textContent || "" : "";
   }
 
   function normalizeUrl(url) {
@@ -94,9 +88,7 @@
     return [...new Set(values.filter(Boolean))];
   }
 
-  /* ------------------------------------------------------------------------
-     Extract images from one Atom entry
-     ------------------------------------------------------------------------ */
+  /* EXTRACT IMAGES */
 
   function extractImages(entry) {
     const images = [];
@@ -104,21 +96,17 @@
     function addImage(url, type = "") {
       const normalized = normalizeUrl(url);
 
-      if (!normalized || !isImageUrl(normalized, type)) {
-        return;
+      if (normalized && isImageUrl(normalized, type)) {
+        images.push(normalized);
       }
-
-      images.push(normalized);
     }
 
-    // Extract images from embedded HTML.
     ["content", "summary"].forEach((selector) => {
       const element = getFirst(entry, selector);
       if (!element) return;
 
-      const html = element.textContent || "";
       const container = document.createElement("div");
-      container.innerHTML = html;
+      container.innerHTML = element.textContent || "";
 
       getElements(container, "img").forEach((img) => {
         addImage(
@@ -137,7 +125,6 @@
       });
     });
 
-    // Extract ActivityPub / Media RSS image elements.
     getElements(entry, "*").forEach((element) => {
       const name = (
         element.localName ||
@@ -159,26 +146,22 @@
       }
     });
 
-    // Extract image enclosures and media links.
     getElements(entry, "link").forEach((link) => {
       const rel = (link.getAttribute("rel") || "").toLowerCase();
       const type = link.getAttribute("type") || "";
-      const href = link.getAttribute("href");
 
       if (
         rel === "enclosure" ||
         type.toLowerCase().startsWith("image/")
       ) {
-        addImage(href, type);
+        addImage(link.getAttribute("href"), type);
       }
     });
 
     return unique(images);
   }
 
-  /* ------------------------------------------------------------------------
-     Post information
-     ------------------------------------------------------------------------ */
+  /* POST INFORMATION */
 
   function getPostLink(entry) {
     const links = getElements(entry, "link");
@@ -202,10 +185,10 @@
   }
 
   function getPostDate(entry) {
-    const published = getEntryText(entry, "published");
-    const updated = getEntryText(entry, "updated");
+    const value =
+      getEntryText(entry, "published") ||
+      getEntryText(entry, "updated");
 
-    const value = published || updated;
     if (!value) return null;
 
     const date = new Date(value);
@@ -224,15 +207,13 @@
   }
 
   function getPostCaption(entry) {
-    const summary = getEntryText(entry, "summary");
-    const content = getEntryText(entry, "content");
-
-    return cleanText(summary || content);
+    return cleanText(
+      getEntryText(entry, "summary") ||
+      getEntryText(entry, "content")
+    );
   }
 
-  /* ------------------------------------------------------------------------
-     Create image carousel with navigation dots
-     ------------------------------------------------------------------------ */
+  /* PHOTO CAROUSEL */
 
   function createMedia(images, postLink) {
     const wrapper = document.createElement("div");
@@ -316,10 +297,7 @@
         }
 
         scrollFrame = requestAnimationFrame(() => {
-          const slides = Array.from(
-            media.querySelectorAll(".pf-slide")
-          );
-
+          const slides = getElements(media, ".pf-slide");
           const mediaRect = media.getBoundingClientRect();
 
           let activeIndex = 0;
@@ -359,16 +337,12 @@
     return wrapper;
   }
 
-  /* ------------------------------------------------------------------------
-     Create one complete post card
-     ------------------------------------------------------------------------ */
+  /* CREATE POST */
 
   function createPost(entry) {
     const images = extractImages(entry);
 
-    if (!images.length) {
-      return null;
-    }
+    if (!images.length) return null;
 
     const postLink = getPostLink(entry);
     const caption = getPostCaption(entry);
@@ -416,36 +390,47 @@
     return article;
   }
 
-  /* ------------------------------------------------------------------------
-     Render visible posts
-     ------------------------------------------------------------------------ */
+  /* LOAD MORE / SHOW LESS BUTTON */
 
-  
-function renderPosts() {
-  feedElement.replaceChildren();
+  function updateMoreButton() {
+    if (!moreButton) return;
 
-  const visible = allPosts.slice(0, visiblePosts);
+    const shouldShow = allPosts.length > POSTS_PER_PAGE;
 
-  visible.forEach((post) => {
-    feedElement.appendChild(post);
-  });
+    moreButton.hidden = !shouldShow;
+    moreButton.style.display = shouldShow ? "" : "none";
 
-  if (moreButton) {
-    const hasMore = visiblePosts < allPosts.length;
+    if (!shouldShow) return;
 
-    moreButton.hidden = !hasMore;
+    if (showingAll) {
+      moreButton.textContent = "Show less";
+      moreButton.setAttribute("aria-label", "Show fewer posts");
+    } else {
+      const remaining = allPosts.length - POSTS_PER_PAGE;
 
-    if (hasMore) {
-      const remaining = allPosts.length - visiblePosts;
       moreButton.textContent = `Load more (${remaining} remaining)`;
+      moreButton.setAttribute("aria-label", "Load all remaining posts");
     }
   }
 
-  setStatus("", false);
-}
-  /* ------------------------------------------------------------------------
-     Load feed
-     ------------------------------------------------------------------------ */
+  /* RENDER POSTS */
+
+  function renderPosts() {
+    feedElement.replaceChildren();
+
+    const postsToShow = showingAll
+      ? allPosts
+      : allPosts.slice(0, POSTS_PER_PAGE);
+
+    postsToShow.forEach((post) => {
+      feedElement.appendChild(post);
+    });
+
+    updateMoreButton();
+    setStatus("", false);
+  }
+
+  /* LOAD FEED */
 
   async function loadPixelfed() {
     setStatus("Loading posts…");
@@ -454,6 +439,7 @@ function renderPosts() {
 
     if (moreButton) {
       moreButton.hidden = true;
+      moreButton.style.display = "none";
     }
 
     try {
@@ -470,7 +456,6 @@ function renderPosts() {
       }
 
       const xmlText = await response.text();
-
       const parser = new DOMParser();
 
       const xml = parser.parseFromString(
@@ -494,7 +479,7 @@ function renderPosts() {
         }
       });
 
-      visiblePosts = POSTS_PER_PAGE;
+      showingAll = false;
 
       if (allPosts.length === 0) {
         setStatus(
@@ -502,7 +487,6 @@ function renderPosts() {
         );
 
         const profileLink = document.createElement("a");
-
         profileLink.href = profileUrl;
         profileLink.target = "_blank";
         profileLink.rel = "noopener noreferrer";
@@ -513,10 +497,6 @@ function renderPosts() {
         );
 
         statusElement?.appendChild(profileLink);
-
-        if (moreButton) {
-          moreButton.hidden = true;
-        }
       } else {
         renderPosts();
       }
@@ -534,24 +514,24 @@ function renderPosts() {
     }
   }
 
-  /* ------------------------------------------------------------------------
-     Load More button
-     ------------------------------------------------------------------------ */
+  /* BUTTON CLICK */
 
   if (moreButton) {
-    moreButton.addEventListener("click", () => {
-      visiblePosts = Math.min(
-        visiblePosts + POSTS_PER_PAGE,
-        allPosts.length
-      );
+    moreButton.onclick = () => {
+      showingAll = !showingAll;
 
       renderPosts();
-    });
+
+      if (!showingAll) {
+        feedElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+    };
   }
 
-  /* ------------------------------------------------------------------------
-     Initialize
-     ------------------------------------------------------------------------ */
+  /* INITIALIZE */
 
   loadPixelfed();
 
