@@ -7,32 +7,8 @@
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-
-<header class="site-header">
-  <div class="wrap">
-    <a href="index.html" class="brand"><img src="logo.png" alt="Office of Felix Feger" class="brand-logo"></a>
-    <nav class="nav-desktop" aria-label="Primary">
-      <a href="index.html">Welcome</a>
-      <a href="travel.html" aria-current="page">Travel</a>
-      <a href="media.html">Media</a>
-      <a href="city-metro.html">City Metro</a>
-      <a href="https://flights.felixfeger.com">Flights</a>
-    <a href="https://blog.felixfeger.com">Blog</a>
-      <a href="contact.html">Contact</a>
-    </nav>
-    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
-  </div>
-  <nav class="nav-mobile" aria-label="Mobile">
-    <a href="index.html">Welcome</a>
-    <a href="travel.html">Travel</a>
-    <a href="media.html">Media</a>
-    <a href="city-metro.html">City Metro</a>
-    <a href="https://flights.felixfeger.com">Flights</a>
-    <a href="https://blog.felixfeger.com">Blog</a>
-    <a href="contact.html">Contact</a>
-  </nav>
-</header>
+<body data-page="travel">
+<script src="js/site.js"></script>
 
 <main>
   <section class="page-hero">
@@ -43,82 +19,19 @@
     </div>
   </section>
 
-  <!-- Trip 1 (most recent) -->
-  <section>
-    <div class="wrap">
-      <div class="trip-block">
-        <h2>Maui, Hawaii</h2>
-        <p class="trip-meta">Beaches, the Road to Hana, and sunrise at Haleakalā</p>
-        <div class="embed-frame">
-          <a target="_blank" href="https://myalbum.com/album/VWvnL6hRPBHpXx/"><img width="850" src="https://myalbum.com/album/VWvnL6hRPBHpXx/cover?size=1000" border="0" /></a>
-        </div>
+  <!-- The latest trips are drawn here by js/travel.js.
+       To add or change a trip, edit the list at the top of that file. -->
+  <div data-travel="latest"></div>
+
+  <noscript>
+    <section>
+      <div class="wrap">
+        <p>JavaScript is needed to show my trips. <a href="travel-archive.html">Open the full archive</a> instead.</p>
       </div>
-    </div>
-  </section>
-
-  <!-- Trip 2 -->
-  <section>
-    <div class="wrap">
-      <div class="trip-block">
-        <h2>Sequoia National Park</h2>
-        <p class="trip-meta">Giant sequoias and mountain air</p>
-        <div class="embed-frame">
-          <a target="_blank" href="https://myalbum.com/album/jTndRV8FNsUWZU/"><img width="850" src="https://myalbum.com/album/jTndRV8FNsUWZU/cover?size=1000" border="0" /></a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Trip 3 (oldest of the three shown) -->
-  <section>
-    <div class="wrap">
-      <div class="trip-block">
-        <h2>Belgium &amp; Paris, France</h2>
-        <p class="trip-meta">Some of the best chocolate in Bruges, Belgium!</p>
-        <div class="embed-frame">
-          <a target="_blank" href="https://myalbum.com/album/fK6YogaoCovWTS/"><img width="850" src="https://myalbum.com/album/fK6YogaoCovWTS/cover?size=1000" border="0" /></a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap" style="text-align: center;">
-      <a href="travel-archive.html" class="btn btn-teal">View full archive &rsaquo;</a>
-    </div>
-  </section>
-
-  <!--
-  TEMPLATE — copy this whole <section> block to add a new trip.
-  Replace the h2, trip-meta text, and the embed-frame's contents with the
-  real MyAlbum embed snippet.
-
-  IMPORTANT: only three trips should show at once. When you add a new one:
-  1. Paste it at the TOP (right after <main>, before the current first trip)
-  2. Delete the current THIRD (oldest) section below so the count stays at three
-  3. Add that same trip to travel-archive.html so it isn't lost — that page
-     keeps every trip forever, this page only shows the latest three
-
-  <section>
-    <div class="wrap">
-      <div class="trip-block">
-        <h2>Trip Name</h2>
-        <p class="trip-meta">Short description of the trip</p>
-        <div class="embed-frame">
-          PASTE MYALBUM EMBED HTML HERE
-        </div>
-      </div>
-    </div>
-  </section>
-  -->
+    </section>
+  </noscript>
 </main>
 
-<footer class="site-footer">
-  <div class="wrap">Copyright 2026 by Felix Feger</div>
-</footer>
-
-<script src="js/main.js"></script>
-<script src="js/site.js"></script>
-<script src='https://www.noupe.com/embed/01a1903b0f0070008fc9191dfc98971be058.js'></script>
+<script src="js/travel.js"></script>
 </body>
 </html>
