@@ -7,32 +7,8 @@
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-
-<header class="site-header">
-  <div class="wrap">
-    <a href="index.html" class="brand"><img src="logo.png" alt="Office of Felix Feger" class="brand-logo"></a>
-    <nav class="nav-desktop" aria-label="Primary">
-      <a href="index.html">Welcome</a>
-      <a href="travel.html" aria-current="page">Travel</a>
-      <a href="media.html">Media</a>
-      <a href="city-metro.html">City Metro</a>
-      <a href="https://flights.felixfeger.com">Flights</a>
-      <a href="https://blog.felixfeger.com">Blog</a>
-      <a href="contact.html">Contact</a>
-    </nav>
-    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
-  </div>
-  <nav class="nav-mobile" aria-label="Mobile">
-    <a href="index.html">Welcome</a>
-    <a href="travel.html">Travel</a>
-    <a href="media.html">Media</a>
-    <a href="city-metro.html">City Metro</a>
-    <a href="https://flights.felixfeger.com">Flights</a>
-    <a href="https://blog.felixfeger.com">Blog</a>
-    <a href="contact.html">Contact</a>
-  </nav>
-</header>
+<body data-page="travel">
+<script src="js/site.js"></script>
 
 <main>
   <section class="page-hero">
@@ -45,71 +21,17 @@
 
   <section>
     <div class="wrap">
-      <div class="post-list">
+      <!-- Every trip is drawn here by js/travel.js, newest first.
+           To add a trip, edit the list at the top of that file. -->
+      <div class="post-list" data-travel="archive"></div>
 
-        <!-- Newest first. Every trip that's ever been on the main Travel
-             page should have an entry here — nothing gets deleted from
-             this list when it rolls off the front page, only added to. -->
-
-        <article class="post-item">
-          <div class="date">June 2026</div>
-          <h2>Maui, Hawaii</h2>
-          <p>Beaches, the Road to Hana, and sunrise at Haleakalā.</p>
-          <a class="read-more" href="https://myalbum.com/album/VWvnL6hRPBHpXx/?invite=5a668f1a-1530-4791-b2ea-b8a29dc6ee97">View full album &rsaquo;</a>
-        </article>
-
-        <article class="post-item">
-          <div class="date">March 2026</div>
-          <h2>Sequoia National Park</h2>
-          <p>Giant sequoias and mountain air.</p>
-          <a class="read-more" href="https://myalbum.com/album/jTndRV8FNsUWZU/?invite=68902ca5-0946-4488-8332-28887c9a4b27">View full album &rsaquo;</a>
-        </article>
-
-        <article class="post-item">
-          <div class="date">January 2026</div>
-          <h2>Paris & Belgium </h2>
-          <p>Some of the best chocalate in Bruges, Belgium! </p>
-          <a class="read-more" href="https://myalbum.com/album/fK6YogaoCovWTS/?invite=72f0f390-50ed-4c1e-bd18-b2afe21eed82">View full album &rsaquo;</a>
-        </article>
-
-        <article class="post-item">
-          <div class="date">November 2025</div>
-          <h2>Las Vegas, Nevada</h2>
-          <p>My first visit to the strip.</p>
-          <a class="read-more" href="https://myalbum.com/album/xJFNGtac5mVdki/?invite=0942f44d-0cb2-4792-85f2-f47408cd2053">View full album &rsaquo;</a>
-        </article>
-
-         <article class="post-item">
-          <div class="date">June 2025</div>
-          <h2>Oahu, Hawaii</h2>
-          <p>My favorite island.</p>
-          <a class="read-more" href="https://myalbum.com/album/JxCCr99qMMBGng/?invite=917c2c83-6e7b-4aab-a9f0-28a1f307da7c">View full album &rsaquo;</a>
-        </article>
-
-        <!--
-        TEMPLATE — copy this whole <article> block for every trip, past or
-        present. Add new ones at the TOP. Unlike travel.html, nothing here
-        ever needs to be deleted — this list only grows.
-
-        <article class="post-item">
-          <div class="date">Short description</div>
-          <h2>Trip Name</h2>
-          <p>One line about the trip.</p>
-          <a class="read-more" href="MYALBUM_SHARE_LINK">View full album &rsaquo;</a>
-        </article>
-        -->
-
-      </div>
+      <noscript>
+        <p>JavaScript is needed to show the archive.</p>
+      </noscript>
     </div>
   </section>
 </main>
 
-<footer class="site-footer">
-  <div class="wrap">Copyright 2026 by Felix Feger</div>
-</footer>
-
-<script src="js/main.js"></script>
-<script src="js/site.js"></script>
-<script src='https://www.noupe.com/embed/01a1903b0f0070008fc9191dfc98971be058.js'></script>
+<script src="js/travel.js"></script>
 </body>
 </html>
