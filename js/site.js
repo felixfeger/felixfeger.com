@@ -39,7 +39,7 @@ window.SITE = {
   announcement: {
     enabled: true,
     id: "26-11-05",
-    text: "Expect delayed responses on November 11 due to Veteran's Day. "
+    text: "Delayed email responses on November 11 due to Veteran's day "
   },
 
 
