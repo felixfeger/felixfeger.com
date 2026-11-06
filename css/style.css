@@ -1066,10 +1066,25 @@ section + section {
   min-width: 0;
   max-width: none;
   margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
+}
+
+.announcement-text:hover {
+  text-decoration: underline;
+}
+
+.announcement-text:focus-visible {
+  outline: 2px solid #0B2E4A;
+  outline-offset: 2px;
 }
 
 .announcement-close {
@@ -1119,4 +1134,47 @@ html.site-locked main {
   font-size: 0.85rem;
   padding: 6px 16px;
   border-bottom: 1px solid var(--line);
+}
+
+
+/* ---------- announcement popup (opens when the bar is clicked) ---------- */
+
+.announcement-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(30, 28, 22, 0.55);
+}
+
+.announcement-dialog {
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 26px 26px 24px;
+  background: var(--bg);
+  border-top: 5px solid #87CEEB;
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.announcement-dialog-label {
+  margin-bottom: 10px;
+  color: #0B2E4A;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.announcement-dialog p {
+  max-width: none;
+  margin: 0 0 22px;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
 }
