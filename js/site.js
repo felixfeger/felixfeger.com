@@ -44,7 +44,7 @@ window.SITE = {
     enabled: true,
     id: "11-05-26",
     text: "Longer email response times on November 11, 2026",
-    description: "Due to the Veteran's Day Holiday on Wednesday, November 11th, please exect longer email response times. We appologize for any inconvience caused."
+    description: "Due to the Veteran's Day Holiday on Wednesday, November 11th, please expect longer email response times. We apologize for any inconvenience caused."
   },
 
 
