@@ -28,18 +28,23 @@ window.SITE = {
 
   // ---- Announcement bar ----------------------------------------------
   //
-  // A single line of text across the very top of every page, sky blue,
-  // with an X so visitors can dismiss it.
+  // A single line across the very top of every page, with an X so visitors
+  // can dismiss it. Clicking the line opens a popup with the full details.
   //
-  //   enabled: true shows it, false hides it everywhere.
-  //   text:    one line. Long text gets cut off with "..." on small screens.
-  //   id:      change this whenever you change the message. Anyone who
-  //            dismissed the old message will see the new one.
+  //   enabled:     true shows it, false hides it everywhere.
+  //   text:        the one line shown in the bar. Long text is cut off with
+  //                "..." on small screens, but it's shown in full in the popup.
+  //   description: optional longer message shown in the popup under the text.
+  //                Leave "" for none. Separate paragraphs with a blank line
+  //                (write \n\n between them).
+  //   id:          change this whenever you change the message. Anyone who
+  //                dismissed the old message will see the new one.
 
   announcement: {
     enabled: true,
     id: "11-05-26",
-    text: "Expect email response delays on November 11 due to Veteran's Day Holiday."
+    text: "Longer email response times on November 11th",
+    description: "Due to the Veteran's Day Holiday on Wednesday, November 11th, please exect longer email response times. We appologize for an inconvience."
   },
 
 
@@ -219,7 +224,7 @@ window.SITE = {
 
   // The popup that shows the whole announcement.
   // Closes with the Close button, a click outside the box, or the Esc key.
-  function openAnnouncement(message, opener) {
+  function openAnnouncement(headline, description, opener) {
 
     if (document.querySelector(".announcement-modal")) return;
 
@@ -235,14 +240,24 @@ window.SITE = {
 
     var label = make("div", "announcement-dialog-label", "Announcement");
 
-    var text = make("p", null, message);
+    var heading = make("h2", null, headline);
 
     var close = make("button", "btn btn-teal", "Close");
 
     close.type = "button";
 
     dialog.appendChild(label);
-    dialog.appendChild(text);
+    dialog.appendChild(heading);
+
+    // The longer description, one <p> per paragraph (blank line = new one).
+    String(description || "").split(/\n\s*\n/).forEach(function (paragraph) {
+
+      paragraph = paragraph.trim();
+
+      if (paragraph) dialog.appendChild(make("p", null, paragraph));
+
+    });
+
     dialog.appendChild(close);
     overlay.appendChild(dialog);
 
@@ -311,7 +326,7 @@ window.SITE = {
     text.setAttribute("aria-haspopup", "dialog");
 
     text.addEventListener("click", function () {
-      openAnnouncement(a.text, text);
+      openAnnouncement(a.text, a.description, text);
     });
 
     var close = make("button", "announcement-close");
