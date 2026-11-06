@@ -1,227 +1,124 @@
-// js/travel.js
-//
-// Used by travel.html and travel-archive.html. Both pages are drawn from
-// the single list of trips below, so they always look and read the same.
-// Change how a trip looks and it changes on both pages. (The styling itself
-// lives in css/style.css, under the "Travel page" section.)
-//
-//   travel.html          shows the newest LATEST_COUNT trips
-//   travel-archive.html  shows every trip in the list
-//
-// TO ADD A TRIP
-//   1. Copy the commented-out template below, paste it at the TOP of the
-//      TRIPS list (newest first), remove the // marks, and fill it in.
-//   2. That's it. Travel shows your newest three automatically, and the
-//      older ones stay in the archive. Nothing gets deleted.
-//
-// Where to find the two MyAlbum links:
-//   album:  the album's web address, e.g. https://myalbum.com/album/XXXX/
-//   invite: the code after "?invite=" in the album's share link
-//           (optional; leave it out if the album has none)
+var TRIPS = [
 
-(function () {
+  // ---- TEMPLATE ----
+  // {
+  //   title: "Trip Name",
+  //   date: "Month Year",
+  //   blurb: "One line about the trip",
+  //   album: "https://myalbum.com/album/ALBUM_ID/",
+  //   invite: "INVITE_CODE"
+  // },
 
-  "use strict";
+  {
+    title: "Maui, Hawaii",
+    date: "June 2026",
+    blurb: "Beaches, the Road to Hana, and sunrise at Haleakalā.",
+    album: "https://myalbum.com/album/VWvnL6hRPBHpXx/",
+    invite: "5a668f1a-1530-4791-b2ea-b8a29dc6ee97"
+  },
 
-  var LATEST_COUNT = 3;
+  {
+    title: "Sequoia National Park",
+    date: "March 2026",
+    blurb: "Giant sequoias and mountain air.",
+    album: "https://myalbum.com/album/jTndRV8FNsUWZU/",
+    invite: "68902ca5-0946-4488-8332-28887c9a4b27"
+  },
 
-  var TRIPS = [
+  {
+    title: "Paris & Belgium",
+    date: "January 2026",
+    blurb: "Some of the best chocalate in Bruges, Belgium!",
+    album: "https://myalbum.com/album/fK6YogaoCovWTS/",
+    invite: "72f0f390-50ed-4c1e-bd18-b2afe21eed82"
+  },
 
-    // ---- TEMPLATE: copy, paste at the top of this list, remove the // ----
-    // {
-    //   title: "Trip Name",
-    //   date: "Month Year",
-    //   blurb: "One line about the trip",
-    //   album: "https://myalbum.com/album/ALBUM_ID/",
-    //   invite: "INVITE_CODE"
-    // },
-    // -----------------------------------------------------------------------
+  {
+    title: "Las Vegas, Nevada",
+    date: "November 2025",
+    blurb: "My first visit to the strip.",
+    album: "https://myalbum.com/album/xJFNGtac5mVdki/",
+    invite: "0942f44d-0cb2-4792-85f2-f47408cd2053"
+  },
 
-    {
-      title: "Maui, Hawaii",
-      date: "June 2026",
-      blurb: "Beaches, the Road to Hana, and sunrise at Haleak\u0101l\u0101",
-      album: "https://myalbum.com/album/VWvnL6hRPBHpXx/",
-      invite: "5a668f1a-1530-4791-b2ea-b8a29dc6ee97"
-    },
+  {
+    title: "New York, New York",
+    date: "June 2025",
+    blurb: "I love the NYC subway.",
+    album: "https://myalbum.com/album/pDDeSUpVE5ibN8/",
+    invite: "e48518e0-4fbf-49d7-acfa-ae08f8999b3b"
+  },
 
-    {
-      title: "Sequoia National Park",
-      date: "March 2026",
-      blurb: "Giant sequoias and mountain air",
-      album: "https://myalbum.com/album/jTndRV8FNsUWZU/",
-      invite: "68902ca5-0946-4488-8332-28887c9a4b27"
-    },
+  {
+    title: "Oahu, Hawaii",
+    date: "June 2025",
+    blurb: "My favorite island.",
+    album: "https://myalbum.com/album/JxCCr99qMMBGng/",
+    invite: "917c2c83-6e7b-4aab-a9f0-28a1f307da7c"
+  },
 
-    {
-      title: "Belgium & Paris, France",
-      date: "January 2026",
-      blurb: "Some of the best chocolate in Bruges, Belgium!",
-      album: "https://myalbum.com/album/fK6YogaoCovWTS/",
-      invite: "72f0f390-50ed-4c1e-bd18-b2afe21eed82"
-    },
+  {
+    title: "Denmark",
+    date: "March 2025",
+    blurb: "Home of the brick!",
+    album: "https://myalbum.com/album/fby8A2LuiVRn4h/",
+    invite: "e12d517b-f7ce-474a-a03e-c3bea3aec11f"
+  },
 
-    {
-      title: "Las Vegas, Nevada",
-      date: "November 2025",
-      blurb: "My first visit to the strip.",
-      album: "https://myalbum.com/album/xJFNGtac5mVdki/",
-      invite: "0942f44d-0cb2-4792-85f2-f47408cd2053"
-    },
+  {
+    title: "Flordia Keys",
+    date: "December 2024",
+    blurb: "The Flordia version of Hawaii!",
+    album: "https://myalbum.com/album/a27bYFeynQNYSC/",
+    invite: "d73ca470-26e8-4b6e-b637-9286269ca5d9"
+  },
 
-    {
-      title: "Oahu, Hawaii",
-      date: "June 2025",
-      blurb: "My favorite island.",
-      album: "https://myalbum.com/album/JxCCr99qMMBGng/",
-      invite: "917c2c83-6e7b-4aab-a9f0-28a1f307da7c"
-    }
+  {
+    title: "Taishan, China",
+    date: "November 2024",
+    blurb: "Never travel through Hong Kong to China.",
+    album: "https://myalbum.com/album/Z3q2AreQ8yqcJg/",
+    invite: "a4f43820-88ed-4479-bb72-a424db5a22af"
+  },
 
-  ];
+  {
+    title: "New Zealand and Australia",
+    date: "June 2024",
+    blurb: "\"Down Under\"",
+    album: "https://myalbum.com/album/Q44UQxZUdRxNuk/",
+    invite: "4a167f23-2852-414d-bda1-c261492ab17d"
+  },
 
+  {
+    title: "Barcelona, Spain",
+    date: "March 2024",
+    blurb: "Don't fly Level Airlines.",
+    album: "https://myalbum.com/album/W5eFf9HSEhwaAC/",
+    invite: "e9a1ce3c-f2a9-46d1-a0be-539f7af977e4"
+  },
 
-  // --------------------------------------------------------
-  // HELPERS
-  // --------------------------------------------------------
+  {
+    title: "China and Japan",
+    date: "December 2023",
+    blurb: "I love Japan!",
+    album: "https://myalbum.com/album/us2iKdMoKzqXEF/",
+    invite: "b45131be-001b-4ecc-83fc-8dd70bbb8a31"
+  },
 
-  function make(tag, className, text) {
+  {
+    title: "London, United Kingdom",
+    date: "November 2023",
+    blurb: "Thankfully it didn't really rain.",
+    album: "https://myalbum.com/album/NqzZz4VG9bXK2b/",
+    invite: "e3955de7-217c-42f8-8691-ff72a1c7ec05"
+  },
 
-    var node = document.createElement(tag);
-
-    if (className) node.className = className;
-
-    if (text) node.textContent = text;
-
-    return node;
-
+  {
+    title: "Oahu, Hawaii",
+    date: "June 2023",
+    blurb: "My first time to Oahu!",
+    album: "https://myalbum.com/album/uqANeN3hgqnNPv/",
+    invite: "aae03c3f-6126-47df-9649-8f6d75955dbd"
   }
 
-  // Album addresses always end with a slash.
-  function albumBase(trip) {
-    return String(trip.album || "").replace(/\/*$/, "/");
-  }
-
-  function albumCover(trip) {
-    return albumBase(trip) + "cover?size=1000";
-  }
-
-  function albumFullLink(trip) {
-    return albumBase(trip) + (trip.invite ? "?invite=" + trip.invite : "");
-  }
-
-
-  // --------------------------------------------------------
-  // TRAVEL PAGE: the latest trips, each with its album cover
-  // --------------------------------------------------------
-
-  function renderLatest(placeholder) {
-
-    var fragment = document.createDocumentFragment();
-
-    TRIPS.slice(0, LATEST_COUNT).forEach(function (trip) {
-
-      var section = make("section");
-      var wrap = make("div", "wrap");
-      var block = make("div", "trip-block");
-
-      block.appendChild(make("h2", null, trip.title));
-      block.appendChild(make("p", "trip-meta", trip.blurb));
-
-      var frame = make("div", "embed-frame");
-
-      var a = make("a");
-
-      a.href = albumBase(trip);
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-
-      var img = make("img");
-
-      img.src = albumCover(trip);
-      img.width = 850;
-      img.alt = trip.title + " \u2014 album cover";
-      img.loading = "lazy";
-
-      a.appendChild(img);
-      frame.appendChild(a);
-      block.appendChild(frame);
-      wrap.appendChild(block);
-      section.appendChild(wrap);
-      fragment.appendChild(section);
-
-    });
-
-    // Link to the archive once there is more than the latest few.
-    if (TRIPS.length > LATEST_COUNT) {
-
-      var ctaSection = make("section");
-      var ctaWrap = make("div", "wrap");
-
-      ctaWrap.style.textAlign = "center";
-
-      var cta = make("a", "btn btn-teal", "View full archive \u203A");
-
-      cta.href = "travel-archive.html";
-
-      ctaWrap.appendChild(cta);
-      ctaSection.appendChild(ctaWrap);
-      fragment.appendChild(ctaSection);
-
-    }
-
-    // The sections replace the placeholder, so they sit directly inside
-    // <main> next to the page header, exactly like hand-written ones.
-    placeholder.replaceWith(fragment);
-
-  }
-
-
-  // --------------------------------------------------------
-  // ARCHIVE PAGE: every trip, newest first
-  // --------------------------------------------------------
-
-  function renderArchive(list) {
-
-    TRIPS.forEach(function (trip) {
-
-      var article = make("article", "post-item");
-
-      article.appendChild(make("div", "date", trip.date));
-      article.appendChild(make("h2", null, trip.title));
-      article.appendChild(make("p", null, trip.blurb));
-
-      var a = make("a", "read-more", "View full album \u203A");
-
-      a.href = albumFullLink(trip);
-
-      article.appendChild(a);
-      list.appendChild(article);
-
-    });
-
-  }
-
-
-  // --------------------------------------------------------
-  // START
-  // --------------------------------------------------------
-
-  function init() {
-
-    var latest = document.querySelector('[data-travel="latest"]');
-
-    if (latest) renderLatest(latest);
-
-    var archive = document.querySelector('[data-travel="archive"]');
-
-    if (archive) renderArchive(archive);
-
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-
-})();
+];
