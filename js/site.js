@@ -38,8 +38,8 @@ window.SITE = {
 
   announcement: {
     enabled: true,
-    id: "26-11-05",
-    text: "Delayed email responses on November 11 due to Veteran's day "
+    id: "11-05-26",
+    text: "Expect email response delays on November 11 due to Veteran's Day Holiday."
   },
 
 
@@ -217,6 +217,76 @@ window.SITE = {
   // ANNOUNCEMENT BAR
   // --------------------------------------------------------
 
+  // The popup that shows the whole announcement.
+  // Closes with the Close button, a click outside the box, or the Esc key.
+  function openAnnouncement(message, opener) {
+
+    if (document.querySelector(".announcement-modal")) return;
+
+    var previousOverflow = body.style.overflow;
+
+    var overlay = make("div", "announcement-modal");
+
+    var dialog = make("div", "announcement-dialog");
+
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-label", "Announcement");
+
+    var label = make("div", "announcement-dialog-label", "Announcement");
+
+    var text = make("p", null, message);
+
+    var close = make("button", "btn btn-teal", "Close");
+
+    close.type = "button";
+
+    dialog.appendChild(label);
+    dialog.appendChild(text);
+    dialog.appendChild(close);
+    overlay.appendChild(dialog);
+
+    function closeModal() {
+
+      overlay.remove();
+
+      document.removeEventListener("keydown", onKey);
+
+      body.style.overflow = previousOverflow;
+
+      if (opener && opener.focus) opener.focus();
+
+    }
+
+    function onKey(event) {
+
+      if (event.key === "Escape") {
+        closeModal();
+      } else if (event.key === "Tab") {
+        // The Close button is the only thing to focus in the popup.
+        event.preventDefault();
+        close.focus();
+      }
+
+    }
+
+    close.addEventListener("click", closeModal);
+
+    overlay.addEventListener("click", function (event) {
+      if (event.target === overlay) closeModal();
+    });
+
+    document.addEventListener("keydown", onKey);
+
+    body.style.overflow = "hidden";
+
+    body.appendChild(overlay);
+
+    close.focus();
+
+  }
+
+
   function buildAnnouncement() {
 
     var a = S.announcement || {};
@@ -233,7 +303,16 @@ window.SITE = {
     bar.setAttribute("role", "region");
     bar.setAttribute("aria-label", "Announcement");
 
-    var text = make("p", "announcement-text", a.text);
+    // The text is a button: clicking it opens the full message in a popup.
+    var text = make("button", "announcement-text", a.text);
+
+    text.type = "button";
+    text.title = "Click to read the full message";
+    text.setAttribute("aria-haspopup", "dialog");
+
+    text.addEventListener("click", function () {
+      openAnnouncement(a.text, text);
+    });
 
     var close = make("button", "announcement-close");
 
@@ -440,10 +519,18 @@ window.SITE = {
 
   // Header, announcement, and notices go in immediately, before the
   // rest of the page loads, so nothing jumps around.
+  //
+  // Safety net: if a page still has an old hand-written header (for example
+  // an old copy of a page is online next to this new file), don't add a
+  // second one.
 
-  var header = buildHeader();
+  var existingHeader = document.querySelector(".site-header");
 
-  body.insertBefore(header, body.firstChild);
+  var header = existingHeader || buildHeader();
+
+  if (!existingHeader) {
+    body.insertBefore(header, body.firstChild);
+  }
 
   if (locked) {
 
@@ -464,23 +551,42 @@ window.SITE = {
 
   // The footer and support widget wait for the page content.
 
-  function finish() {
+  function hasScript(src) {
 
-    var footer = buildFooter();
+    var scripts = document.getElementsByTagName("script");
 
-    var main = document.querySelector("main");
-
-    if (main) {
-      main.insertAdjacentElement("afterend", footer);
-    } else {
-      body.appendChild(footer);
+    for (var i = 0; i < scripts.length; i++) {
+      if (scripts[i].getAttribute("src") === src) return true;
     }
 
-    if (S.support && !locked) {
+    return false;
+
+  }
+
+  function finish() {
+
+    // Same safety net as the header: never add a second footer.
+    if (!document.querySelector(".site-footer")) {
+
+      var footer = buildFooter();
+
+      var main = document.querySelector("main");
+
+      if (main) {
+        main.insertAdjacentElement("afterend", footer);
+      } else {
+        body.appendChild(footer);
+      }
+
+    }
+
+    // ...and never load the support widget twice.
+    if (S.support && !locked && !hasScript(S.support)) {
 
       var script = document.createElement("script");
 
       script.src = S.support;
+      script.setAttribute("src", S.support);
       script.async = true;
 
       body.appendChild(script);
