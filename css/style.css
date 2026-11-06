@@ -24,6 +24,15 @@
 
   --amber: #C9932E;
 
+  /* Extra colours that change in dark mode (see the dark block at the bottom) */
+  --header-bg: rgba(245, 241, 232, 0.92);
+  --on-teal: #fff;           /* text on a filled teal button */
+  --error: #8A2B2B;
+  --form-bg: #ECE5D3;        /* the form panel stays light in dark mode, so the
+                                embedded form's dark text stays readable */
+
+  color-scheme: light dark;  /* scrollbars, inputs, etc. follow the system too */
+
   --font-display: 'Quicksand', sans-serif;
   --font-body: 'Inter', sans-serif;
 
@@ -103,7 +112,7 @@ p {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(245, 241, 232, 0.92);
+  background: var(--header-bg);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--line);
 }
@@ -132,6 +141,7 @@ p {
   height: 36px;
   width: auto;
   display: block;
+  mix-blend-mode: multiply;   /* a white logo background disappears into the header */
 }
 
 .nav-desktop {
@@ -285,7 +295,7 @@ p {
 
 .btn-teal:hover {
   background: var(--teal-deep);
-  color: #fff;
+  color: var(--on-teal);
 }
 
 
@@ -638,10 +648,11 @@ section + section {
 .form-frame {
   border: 1px solid var(--line);
   min-height: 460px;
-  background: var(--bg-raised);
+  background: var(--form-bg);
 }
 
 .form-frame iframe {
+  color-scheme: light;
   width: 100%;
   height: 460px;
   border: 0;
@@ -674,10 +685,12 @@ section + section {
   margin: 18px 0;
   box-sizing: border-box;
   text-align: center;
+  background: var(--bg);
+  color: var(--ink);
 }
 
 .gate-error {
-  color: #8A2B2B;
+  color: var(--error);
   font-size: 0.9rem;
   min-height: 1.2em;
   margin-bottom: 8px;
@@ -1047,6 +1060,7 @@ section + section {
 :root {
   --announce-bg: #cfe0f3;
   --announce-text: #0b1220;
+  --announce-hover: rgba(11, 18, 32, 0.12);
 }
 
 
@@ -1115,7 +1129,7 @@ section + section {
 }
 
 .announcement-close:hover {
-  background: rgba(11, 18, 32, 0.12);
+  background: var(--announce-hover);
 }
 
 .announcement-close:focus-visible {
@@ -1195,4 +1209,48 @@ html.site-locked main {
 
 .announcement-dialog .btn {
   margin-top: 8px;
+}
+
+
+/* ==========================================================================
+   DARK MODE
+   Follows the visitor's system setting automatically (no switch needed).
+   Only the colours change; layout is shared. Keep this block LAST so it wins.
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --bg: #1f1d19;
+    --bg-raised: #2a2721;
+
+    --ink: #efe9da;
+    --ink-soft: #b4ab96;
+
+    --line: #403b31;
+
+    --teal: #8bbcc2;
+    --teal-deep: #8bbcc2;
+
+    --header-bg: rgba(31, 29, 25, 0.92);
+    --on-teal: #1f1d19;
+    --error: #ff9b9b;
+
+    --announce-bg: #1b2f4d;
+    --announce-text: #f2f4f8;
+    --announce-hover: rgba(242, 244, 248, 0.16);
+  }
+
+  /* The logo is black line art: flip it to light, and let any white
+     background in the file disappear. */
+  .brand-logo {
+    filter: invert(1);
+    mix-blend-mode: screen;
+  }
+
+  .preview-banner {
+    background: #3a3220;
+    color: #e8c98a;
+  }
+
 }
