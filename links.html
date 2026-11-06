@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Felix Feger · Links</title>
+<meta name="description" content="Find Felix Feger (@felix_traveler) everywhere online.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="stylesheet" href="css/style.css">
+
+<!-- Page-only styles. Everything else comes from css/style.css -->
+<style>
+  .links-wrap { max-width: 520px; margin: 0 auto; padding: 0 1.25rem 3rem; }
+  .links-hero { text-align: center; padding: 3rem 1rem 1.5rem; }
+  .links-hero .handle { opacity: .7; margin: .25rem 0 0; }
+  .link-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .85rem; }
+  .link-list a {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 1rem 1.25rem; border-radius: 14px; text-decoration: none; color: inherit;
+    border: 1px solid rgba(128,128,128,.3); background: rgba(128,128,128,.08);
+    transition: transform .15s ease, background .15s ease;
+  }
+  .link-list a:hover, .link-list a:focus-visible { transform: translateY(-2px); background: rgba(128,128,128,.16); }
+  .link-list .title { font-weight: 600; display: block; }
+  .link-list .desc { font-size: .85rem; opacity: .7; display: block; margin-top: .15rem; }
+  .link-list .arrow { opacity: .6; font-size: 1.25rem; }
+</style>
+</head>
+<body data-page="links">
+<script src="js/site.js"></script>
+
+<main>
+  <section class="links-hero">
+    <svg class="wave-icon" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M2 10 Q10 2 18 10 T34 10 T50 10 T62 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      <path d="M2 20 Q10 12 18 20 T34 20 T50 20 T62 20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      <path d="M2 30 Q10 22 18 30 T34 30 T50 30 T62 30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h1>Felix Feger</h1>
+    <p class="handle">@felix_traveler</p>
+    <p class="tagline">Founder of City Metro, occasional traveler, and software developer.</p>
+  </section>
+
+  <div class="links-wrap">
+    <ul class="link-list" id="link-list"></ul>
+  </div>
+</main>
+
+<script>
+  /* ============================================================
+     EDIT YOUR LINKS HERE
+     - Order in this list = order on the page (top to bottom)
+     - To hide a link, delete the line or comment it out with //
+     - To add one, copy a line and change the values
+     ============================================================ */
+  const HANDLE = "felix_traveler";
+
+  const LINKS = [
+    { title: "Pixelfed",  desc: "My travel photos",              url: "https://pixelfed.social/" + HANDLE },   // TODO: your Pixelfed instance
+    { title: "Flights",   desc: "Track my flights",              url: "https://flights.felixfeger.com" },
+    { title: "Mastodon",  desc: "Posts & updates",               url: "https://mastodon.social/@" + HANDLE },  // TODO: your Mastodon instance
+    { title: "YouTube",   desc: "Videos & travel vlogs",         url: "https://www.youtube.com/@" + HANDLE },
+    { title: "TikTok",    desc: "Short clips",                   url: "https://www.tiktok.com/@" + HANDLE },
+    { title: "X",         desc: "Quick thoughts",                url: "https://x.com/" + HANDLE },
+    { title: "Spotify",   desc: "What I'm listening to",         url: "https://open.spotify.com/user/YOUR_SPOTIFY_ID" }, // TODO: your Spotify profile URL
+    { title: "guns.lol",  desc: "All my links in one place",     url: "https://guns.lol/" + HANDLE }           // TODO: confirm your guns.lol username
+  ];
+
+  /* ---- Rendering code: no need to touch below ---- */
+  const list = document.getElementById("link-list");
+  LINKS.forEach(l => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = l.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer me";
+    a.innerHTML =
+      '<span><span class="title"></span><span class="desc"></span></span><span class="arrow" aria-hidden="true">&rsaquo;</span>';
+    a.querySelector(".title").textContent = l.title;
+    a.querySelector(".desc").textContent = l.desc || "";
+    li.appendChild(a);
+    list.appendChild(li);
+  });
+</script>
+</body>
+</html>
