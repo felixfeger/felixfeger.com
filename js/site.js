@@ -37,9 +37,9 @@ window.SITE = {
   //            dismissed the old message will see the new one.
 
   announcement: {
-    enabled: false,
-    id: "announcement-1",
-    text: "Your one-line announcement goes here."
+    enabled: true,
+    id: "26-11-05",
+    text: "Expect delayed responses on November 11 due to Veteran's Day. "
   },
 
 
