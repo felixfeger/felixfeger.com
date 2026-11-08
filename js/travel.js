@@ -1,4 +1,31 @@
-var TRIPS = [
+// js/travel.js
+//
+// Used by travel.html and travel-archive.html. Both pages are drawn from
+// the single list of trips below, so they always look and read the same.
+// Change how a trip looks and it changes on both pages. (The styling itself
+// lives in css/style.css, under the "Travel page" section.)
+//
+//   travel.html          shows the newest LATEST_COUNT trips
+//   travel-archive.html  shows every trip in the list
+//
+// TO ADD A TRIP
+//   1. Copy the commented-out template below, paste it at the TOP of the
+//      TRIPS list (newest first), remove the // marks, and fill it in.
+//   2. That's it. Travel shows your newest three automatically, and the
+//      older ones stay in the archive. Nothing gets deleted.
+//
+// Where to find the two MyAlbum links:
+//   album:  the album's web address, e.g. https://myalbum.com/album/XXXX/
+//   invite: the code after "?invite=" in the album's share link
+//           (optional; leave it out if the album has none)
+
+(function () {
+
+  "use strict";
+
+  var LATEST_COUNT = 3;
+
+  var TRIPS = [
 
   // ---- TEMPLATE ----
   // {
@@ -12,7 +39,7 @@ var TRIPS = [
   {
     title: "Maui, Hawaii",
     date: "June 2026",
-    blurb: "Beaches, the Road to Hana, and sunrise at Haleakalā.",
+    blurb: "Beaches, the Road to Hana, and sunrise at HaleakalÄ.",
     album: "https://myalbum.com/album/VWvnL6hRPBHpXx/",
     invite: "5a668f1a-1530-4791-b2ea-b8a29dc6ee97"
   },
@@ -122,3 +149,150 @@ var TRIPS = [
   }
 
 ];
+
+
+  // --------------------------------------------------------
+  // HELPERS
+  // --------------------------------------------------------
+
+  function make(tag, className, text) {
+
+    var node = document.createElement(tag);
+
+    if (className) node.className = className;
+
+    if (text) node.textContent = text;
+
+    return node;
+
+  }
+
+  // Album addresses always end with a slash.
+  function albumBase(trip) {
+    return String(trip.album || "").replace(/\/*$/, "/");
+  }
+
+  function albumCover(trip) {
+    return albumBase(trip) + "cover?size=1000";
+  }
+
+  function albumFullLink(trip) {
+    return albumBase(trip) + (trip.invite ? "?invite=" + trip.invite : "");
+  }
+
+
+  // --------------------------------------------------------
+  // TRAVEL PAGE: the latest trips, each with its album cover
+  // --------------------------------------------------------
+
+  function renderLatest(placeholder) {
+
+    var fragment = document.createDocumentFragment();
+
+    TRIPS.slice(0, LATEST_COUNT).forEach(function (trip) {
+
+      var section = make("section");
+      var wrap = make("div", "wrap");
+      var block = make("div", "trip-block");
+
+      block.appendChild(make("h2", null, trip.title));
+      block.appendChild(make("p", "trip-meta", trip.blurb));
+
+      var frame = make("div", "embed-frame");
+
+      var a = make("a");
+
+      a.href = albumBase(trip);
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+
+      var img = make("img");
+
+      img.src = albumCover(trip);
+      img.width = 850;
+      img.alt = trip.title + " \u2014 album cover";
+      img.loading = "lazy";
+
+      a.appendChild(img);
+      frame.appendChild(a);
+      block.appendChild(frame);
+      wrap.appendChild(block);
+      section.appendChild(wrap);
+      fragment.appendChild(section);
+
+    });
+
+    // Link to the archive once there is more than the latest few.
+    if (TRIPS.length > LATEST_COUNT) {
+
+      var ctaSection = make("section");
+      var ctaWrap = make("div", "wrap");
+
+      ctaWrap.style.textAlign = "center";
+
+      var cta = make("a", "btn btn-teal", "View full archive \u203A");
+
+      cta.href = "travel-archive.html";
+
+      ctaWrap.appendChild(cta);
+      ctaSection.appendChild(ctaWrap);
+      fragment.appendChild(ctaSection);
+
+    }
+
+    // The sections replace the placeholder, so they sit directly inside
+    // <main> next to the page header, exactly like hand-written ones.
+    placeholder.replaceWith(fragment);
+
+  }
+
+
+  // --------------------------------------------------------
+  // ARCHIVE PAGE: every trip, newest first
+  // --------------------------------------------------------
+
+  function renderArchive(list) {
+
+    TRIPS.forEach(function (trip) {
+
+      var article = make("article", "post-item");
+
+      article.appendChild(make("div", "date", trip.date));
+      article.appendChild(make("h2", null, trip.title));
+      article.appendChild(make("p", null, trip.blurb));
+
+      var a = make("a", "read-more", "View full album \u203A");
+
+      a.href = albumFullLink(trip);
+
+      article.appendChild(a);
+      list.appendChild(article);
+
+    });
+
+  }
+
+
+  // --------------------------------------------------------
+  // START
+  // --------------------------------------------------------
+
+  function init() {
+
+    var latest = document.querySelector('[data-travel="latest"]');
+
+    if (latest) renderLatest(latest);
+
+    var archive = document.querySelector('[data-travel="archive"]');
+
+    if (archive) renderArchive(archive);
+
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+})();
