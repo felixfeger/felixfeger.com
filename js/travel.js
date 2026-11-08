@@ -39,7 +39,7 @@
   {
     title: "Maui, Hawaii",
     date: "June 2026",
-    blurb: "Beaches, the Road to Hana, and sunrise at HaleakalÄ.",
+    blurb: "Beaches, the Road to Hana, and sunrise at Haleakalā.",
     album: "https://myalbum.com/album/VWvnL6hRPBHpXx/",
     invite: "5a668f1a-1530-4791-b2ea-b8a29dc6ee97"
   },
