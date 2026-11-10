@@ -63,7 +63,13 @@
      ============================================================ */
   const HANDLE = "felix_traveler";
 
-  const GROUPS = [
+  const GROUPS = 
+  {
+      title: "Annoucements ",
+      links: [
+        { title: "Instagram", desc: "Instagram account update",  url: "https://pixelfed.social/" + HANDLE },  // TODO: your Pixelfed instance
+      ]
+    },
     {
       title: "Photos & Travel",
       links: [
@@ -74,6 +80,7 @@
     {
       title: "Social",
       links: [
+        { title: "Instagram", desc: "Pictures & updates",  url: "https://instagram.com/felix_transit,
         { title: "Mastodon", desc: "Posts & updates",  url: "https://mastodon.social/@" + HANDLE },    // TODO: your Mastodon instance
         { title: "X",        desc: "Quick thoughts",   url: "https://x.com/" + HANDLE },
         { title: "TikTok",   desc: "Short clips",      url: "https://www.tiktok.com/@" + HANDLE }
