@@ -42,9 +42,9 @@ window.SITE = {
 
   announcement: {
     enabled: true,
-    id: "11-05-26",
-    text: "Longer email response times on November 11, 2026",
-    description: "Due to the Veteran's Day Holiday on Wednesday, November 11th, please expect longer email response times. We apologize for any inconvenience caused."
+    id: "11-10-26",
+    text: "Update on the Instagram Accounts Situation",
+    description: "As of November 10, 2026, we have regained access to @felix_traveler and @felix_transit. The account @felix.transit has since been archived. We apologize for any inconvenience."
   },
 
 
