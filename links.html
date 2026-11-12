@@ -7,122 +7,216 @@
 <meta name="description" content="Find Felix Feger (@felix_traveler) everywhere online.">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="stylesheet" href="css/style.css">
-
-<!-- Page-only styles. Everything else comes from css/style.css -->
+<!-- Page-only styles -->
 <style>
-  /* Centering is forced on every child so style.css rules for p/h1 can't push things left on desktop */
-  .links-hero { text-align: center; padding: 3rem 1rem 1.5rem; }
-  .links-hero > * { margin-left: auto !important; margin-right: auto !important; text-align: center !important; max-width: 600px; }
-  .links-hero .handle { opacity: .7; margin-top: .25rem; margin-bottom: .5rem; }
-
-  .links-wrap { width: 100%; max-width: 600px; margin: 0 auto; padding: 0 1.25rem 3rem; box-sizing: border-box; }
-  .link-group { margin-top: 1.75rem; }
-  .link-group:first-child { margin-top: 0; }
-  .group-title {
-    margin: 0 0 .6rem .25rem; font-size: .8rem; font-weight: 600;
-    letter-spacing: .08em; text-transform: uppercase; opacity: .6; text-align: left;
+  .links-hero {
+    text-align: center;
+    padding: 3rem 1rem 1.5rem;
   }
-  .link-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .85rem; }
+  .links-hero > * {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+    max-width: 600px;
+  }
+  .links-hero .handle {
+    opacity: .7;
+    margin-top: .25rem;
+    margin-bottom: .5rem;
+  }
+  .links-wrap {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 1.25rem 3rem;
+    box-sizing: border-box;
+  }
+  .link-group {
+    margin-top: 1.75rem;
+  }
+  .link-group:first-child {
+    margin-top: 0;
+  }
+  .group-title {
+    margin: 0 0 .6rem .25rem;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .6;
+    text-align: left;
+  }
+  .link-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: .85rem;
+  }
   .link-list a {
-    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-    padding: 1rem 1.25rem; border-radius: 14px; text-decoration: none; color: inherit; text-align: left;
-    border: 1px solid rgba(128,128,128,.3); background: rgba(128,128,128,.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    text-align: left;
+    border: 1px solid rgba(128,128,128,.3);
+    background: rgba(128,128,128,.08);
     transition: transform .15s ease, background .15s ease;
   }
-  .link-list a:hover, .link-list a:focus-visible { transform: translateY(-2px); background: rgba(128,128,128,.16); }
-  .link-list .title { font-weight: 600; display: block; }
-  .link-list .desc { font-size: .85rem; opacity: .7; display: block; margin-top: .15rem; }
-  .link-list .arrow { opacity: .6; font-size: 1.25rem; }
+  .link-list a:hover,
+  .link-list a:focus-visible {
+    transform: translateY(-2px);
+    background: rgba(128,128,128,.16);
+  }
+  .link-list .title {
+    font-weight: 600;
+    display: block;
+  }
+  .link-list .desc {
+    font-size: .85rem;
+    opacity: .7;
+    display: block;
+    margin-top: .15rem;
+  }
+  .link-list .arrow {
+    opacity: .6;
+    font-size: 1.25rem;
+  }
 </style>
 </head>
 <body data-page="links">
 <script src="js/site.js"></script>
-
 <main>
   <section class="links-hero">
-    <svg class="wave-icon" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:block">
-      <path d="M2 10 Q10 2 18 10 T34 10 T50 10 T62 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-      <path d="M2 20 Q10 12 18 20 T34 20 T50 20 T62 20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-      <path d="M2 30 Q10 22 18 30 T34 30 T50 30 T62 30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <svg class="wave-icon"
+         viewBox="0 0 64 40"
+         fill="none"
+         xmlns="http://www.w3.org/2000/svg"
+         aria-hidden="true"
+         style="display:block">
+      <path d="M2 10 Q10 2 18 10 T34 10 T50 10 T62 10"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"/>
+      <path d="M2 20 Q10 12 18 20 T34 20 T50 20 T62 20"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"/>
+      <path d="M2 30 Q10 22 18 30 T34 30 T50 30 T62 30"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"/>
     </svg>
     <h1>Links in Bio</h1>
     <p class="handle">@felix_traveler</p>
     <p class="tagline">Founder of City Metro, occasional traveler, and software developer.</p>
   </section>
-
   <div class="links-wrap" id="links-root"></div>
 </main>
-
 <script>
   /* ============================================================
      EDIT YOUR LINKS HERE
-     - Groups show top to bottom, links show in the order listed
-     - To hide a link or group, delete it or comment it out with //
-     - To add a link, copy a line and change the values
-     - Want no categories? Use a single group and set  title: ""
+     - Groups show top to bottom
+     - Links show in the order listed
+     - To hide a link, remove it from the list
      ============================================================ */
   const HANDLE = "felix_traveler";
-
-  const GROUPS = 
-  {
-      title: "Annoucements ",
-      links: [
-        { title: "Instagram", desc: "Instagram account update",  url: "https://pixelfed.social/" + HANDLE },  // TODO: your Pixelfed instance
-      ]
-    },
+  const GROUPS = [
     {
       title: "Photos & Travel",
       links: [
-        { title: "Pixelfed", desc: "My travel photos",  url: "https://pixelfed.social/" + HANDLE },  // TODO: your Pixelfed instance
-        { title: "Flights",  desc: "Track my flights",  url: "https://flights.felixfeger.com" }
+        {
+          title: "Pixelfed",
+          desc: "My travel photos",
+          url: "https://pixelfed.social/" + HANDLE
+        },
+        {
+          title: "Flights",
+          desc: "Track my flights",
+          url: "https://flights.felixfeger.com"
+        }
       ]
     },
     {
       title: "Social",
       links: [
-        { title: "Instagram", desc: "Pictures & updates",  url: "https://instagram.com/felix_transit,
-        { title: "Mastodon", desc: "Posts & updates",  url: "https://mastodon.social/@" + HANDLE },    // TODO: your Mastodon instance
-        { title: "X",        desc: "Quick thoughts",   url: "https://x.com/" + HANDLE },
-        { title: "TikTok",   desc: "Short clips",      url: "https://www.tiktok.com/@" + HANDLE }
+        {
+          title: "Instagram",
+          desc: "Pictures & updates",
+          url: "https://instagram.com/felix_transit"
+        },
+        {
+          title: "Mastodon",
+          desc: "Posts & updates",
+          url: "https://mastodon.social/@" + HANDLE
+        },
+        {
+          title: "X",
+          desc: "Quick thoughts",
+          url: "https://x.com/" + HANDLE
+        },
+        {
+          title: "TikTok",
+          desc: "Short clips",
+          url: "https://www.tiktok.com/@" + HANDLE
+        }
       ]
     },
     {
       title: "Watch & Listen",
       links: [
-        { title: "YouTube",  desc: "Videos & travel vlogs", url: "https://www.youtube.com/@" + HANDLE },
-        { title: "Spotify",  desc: "What I'm listening to", url: "https://open.spotify.com/user/31cdmx7mjp2phpnjlnxldfbtflri" }
+        {
+          title: "YouTube",
+          desc: "Videos & travel vlogs",
+          url: "https://www.youtube.com/@" + HANDLE
+        },
+        {
+          title: "Spotify",
+          desc: "What I'm listening to",
+          url: "https://open.spotify.com/user/31cdmx7mjp2phpnjlnxldfbtflri"
+        }
       ]
     },
     {
       title: "More",
       links: [
-        { title: "guns.lol", desc: "All my links in one place", url: "https://guns.lol/" + HANDLE }  // TODO: confirm your guns.lol username
+        {
+          title: "guns.lol",
+          desc: "All my links in one place",
+          url: "https://guns.lol/" + HANDLE
+        }
       ]
     }
   ];
-
-  /* ---- Rendering code: no need to touch below ---- */
+  /* ---- Rendering code ---- */
   const root = document.getElementById("links-root");
-  GROUPS.forEach(g => {
+  GROUPS.forEach(group => {
     const section = document.createElement("section");
     section.className = "link-group";
-    if (g.title) {
-      const h = document.createElement("h2");
-      h.className = "group-title";
-      h.textContent = g.title;
-      section.appendChild(h);
+    if (group.title) {
+      const heading = document.createElement("h2");
+      heading.className = "group-title";
+      heading.textContent = group.title;
+      section.appendChild(heading);
     }
     const ul = document.createElement("ul");
     ul.className = "link-list";
-    g.links.forEach(l => {
+    group.links.forEach(link => {
       const li = document.createElement("li");
       const a = document.createElement("a");
-      a.href = l.url;
+      a.href = link.url;
       a.target = "_blank";
       a.rel = "noopener noreferrer me";
-      a.innerHTML = '<span><span class="title"></span><span class="desc"></span></span><span class="arrow" aria-hidden="true">&rsaquo;</span>';
-      a.querySelector(".title").textContent = l.title;
-      a.querySelector(".desc").textContent = l.desc || "";
+      a.innerHTML =
+        '<span><span class="title"></span>' +
+        '<span class="desc"></span></span>' +
+        '<span class="arrow" aria-hidden="true">&rsaquo;</span>';
+      a.querySelector(".title").textContent = link.title;
+      a.querySelector(".desc").textContent = link.desc || "";
       li.appendChild(a);
       ul.appendChild(li);
     });
