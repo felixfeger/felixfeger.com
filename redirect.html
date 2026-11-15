@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaving felixfeger.com</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="stylesheet" href="/css/style.css">
+
+<!-- Page-only styles -->
+<style>
+  .rd { padding: 88px 24px 80px; }
+  .rd p { margin-left: auto; margin-right: auto; }
+
+  .rd-route { width: min(100%, 560px); margin: 44px auto 0; }
+  .rd-route svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+  .rd-track { stroke: var(--line); }
+  .rd-progress { stroke: var(--teal); }
+  .rd-start { fill: var(--teal); }
+  .rd-end { fill: var(--bg); stroke: var(--line); stroke-width: 4; }
+  .rd-dot { fill: var(--amber); stroke: var(--bg); stroke-width: 3; }
+
+  .rd-arrived .rd-end { fill: var(--amber); stroke: var(--amber); }
+  .rd-arrived .rd-dot { opacity: 0; }
+
+  .rd-ends {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    max-width: 560px;
+    margin: 14px auto 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .rd-ends span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rd-ends span:last-child { text-align: right; }
+
+  .rd-status { margin-top: 28px; margin-bottom: 6px; color: var(--ink-soft); font-weight: 500; min-height: 1.6em; }
+  .rd-url { margin-bottom: 32px; max-width: 52ch; color: var(--ink-soft); font-size: 0.85rem; overflow-wrap: anywhere; }
+  .rd-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+
+<body data-page="redirect">
+<script src="/js/site.js"></script>
+<script>
+  // No support widget on this page.
+  window.SITE.support = "";
+</script>
+
+<main>
+  <section class="hero rd" id="rd-ok" hidden>
+    <h1>Leaving felixfeger.com</h1>
+    <p class="tagline">
+      Heading to <strong id="rd-host"></strong>. I don&rsquo;t run that site,
+      so what you find there is out of my hands.
+    </p>
+
+    <div class="rd-route" id="rd-route" aria-hidden="true">
+      <svg viewBox="0 0 600 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path id="rd-track" class="rd-track" stroke-width="4" stroke-linecap="round"
+              d="M4 40 Q41.5 8 79 40 T154 40 T229 40 T304 40 T379 40 T454 40 T529 40 T596 40"/>
+        <path id="rd-progress" class="rd-progress" stroke-width="4" stroke-linecap="round"
+              d="M4 40 Q41.5 8 79 40 T154 40 T229 40 T304 40 T379 40 T454 40 T529 40 T596 40"/>
+        <circle class="rd-start" cx="4" cy="40" r="9"/>
+        <circle class="rd-end" cx="596" cy="40" r="9"/>
+        <circle id="rd-dot" class="rd-dot" cx="4" cy="40" r="8"/>
+      </svg>
+    </div>
+    <div class="rd-ends" aria-hidden="true">
+      <span>felixfeger.com</span>
+      <span id="rd-host-end"></span>
+    </div>
+
+    <p class="rd-status" id="rd-status" role="status" aria-live="polite"></p>
+    <p class="rd-url" id="rd-url"></p>
+
+    <div class="rd-actions">
+      <a class="btn btn-teal" id="rd-go" data-no-redirect rel="noopener noreferrer">Go now</a>
+      <button class="btn" id="rd-stay" type="button">Stay here</button>
+    </div>
+  </section>
+
+  <section class="hero rd" id="rd-bad" hidden>
+    <h1>Nothing to open</h1>
+    <p class="tagline">That link didn&rsquo;t include a valid web address.</p>
+    <a href="/index.html" class="btn">Back Home</a>
+  </section>
+
+  <noscript>
+    <section class="hero rd">
+      <h1>JavaScript is off</h1>
+      <p class="tagline">This page needs JavaScript to show where the link goes. Go back and copy the address instead.</p>
+      <a href="/index.html" class="btn">Back Home</a>
+    </section>
+  </noscript>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var X = (window.SITE && window.SITE.externalRedirect) || {};
+  var SECONDS = X.seconds || 4;
+  var DOMAINS = X.internalDomains || ["felixfeger.com"];
+
+  function $(id) { return document.getElementById(id); }
+
+  function isInternal(host) {
+    host = host.toLowerCase();
+    if (host === location.hostname.toLowerCase()) return true;
+    return DOMAINS.some(function (d) {
+      d = d.toLowerCase();
+      return host === d || host.slice(-(d.length + 1)) === "." + d;
+    });
+  }
+
+  // ---- Read and check the destination -------------------------------
+
+  var raw = new URLSearchParams(location.search).get("to") || "";
+  var dest = null;
+
+  try {
+    var u = new URL(raw);
+    if ((u.protocol === "http:" || u.protocol === "https:") && raw.length < 2048) dest = u;
+  } catch (e) { /* not a valid address */ }
+
+  if (!dest) { $("rd-bad").hidden = false; return; }
+
+  // One of my own sites: nothing to warn about, just go.
+  if (isInternal(dest.hostname)) { location.replace(dest.href); return; }
+
+  // ---- Fill in the page ----------------------------------------------
+
+  $("rd-ok").hidden = false;
+  $("rd-host").textContent = dest.host;
+  $("rd-host-end").textContent = dest.host;
+  $("rd-url").textContent = dest.href;
+  $("rd-go").href = dest.href;
+  document.title = "Leaving felixfeger.com for " + dest.host;
+
+  // ---- The route animation -------------------------------------------
+
+  var route = $("rd-route");
+  var progress = $("rd-progress");
+  var dot = $("rd-dot");
+  var len = progress.getTotalLength();
+
+  progress.style.strokeDasharray = len;
+
+  function draw(p) {
+    progress.style.strokeDashoffset = len * (1 - p);
+    var pt = progress.getPointAtLength(len * p);
+    dot.setAttribute("cx", pt.x);
+    dot.setAttribute("cy", pt.y);
+  }
+
+  var elapsed = 0, last = null, done = false;
+
+  function go() {
+    done = true;
+    draw(1);
+    route.classList.add("rd-arrived");
+    $("rd-status").textContent = "Opening " + dest.host + "\u2026";
+    // replace() keeps this page out of the back-button history
+    location.replace(dest.href);
+  }
+
+  function frame(now) {
+    if (done) return;
+    if (last === null) last = now;
+    // Cap each step so a background tab doesn't skip the whole countdown
+    elapsed += Math.min(now - last, 100);
+    last = now;
+
+    var p = Math.min(elapsed / (SECONDS * 1000), 1);
+    draw(p);
+
+    if (p >= 1) { go(); return; }
+
+    $("rd-status").textContent =
+      "Opening in " + Math.ceil(SECONDS - elapsed / 1000) + "\u2026";
+
+    requestAnimationFrame(frame);
+  }
+
+  draw(0);
+  requestAnimationFrame(frame);
+
+  // ---- Buttons ---------------------------------------------------------
+
+  $("rd-go").addEventListener("click", function () { done = true; });
+
+  $("rd-stay").addEventListener("click", function () {
+    done = true;
+    if (history.length > 1) { history.back(); } else { location.href = "/index.html"; }
+  });
+})();
+</script>
+
+</body>
+</html>
