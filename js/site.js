@@ -83,6 +83,28 @@ window.SITE = {
   ],
 
 
+  // ---- External links ------------------------------------------------
+  //
+  // Any link that leads away from felixfeger.com (or one of its
+  // subdomains, like blog. and flights.) first opens redirect.html, which
+  // shows a short "leaving the site" screen and then continues on.
+  //
+  //   enabled:         false turns the whole feature off.
+  //   page:            address of the redirect page.
+  //   seconds:         how long the screen shows before moving on.
+  //   internalDomains: sites that count as "this site". Subdomains are
+  //                    included automatically.
+  //
+  // To skip the screen for one link, add data-no-redirect to it.
+
+  externalRedirect: {
+    enabled: true,
+    page: "/redirect.html",
+    seconds: 4,
+    internalDomains: ["felixfeger.com"]
+  },
+
+
   // ---- Pixelfed -----------------------------------------------------
 
   pixelfed: {
@@ -615,5 +637,88 @@ window.SITE = {
   } else {
     finish();
   }
+
+
+  // --------------------------------------------------------
+  // EXTERNAL LINKS -> "LEAVING THE SITE" PAGE
+  // --------------------------------------------------------
+
+  var X = S.externalRedirect || {};
+
+  function isInternalHost(host) {
+
+    host = String(host).toLowerCase();
+
+    if (host === window.location.hostname.toLowerCase()) return true;
+
+    return (X.internalDomains || ["felixfeger.com"]).some(function (d) {
+
+      d = String(d).toLowerCase();
+
+      return host === d || host.slice(-(d.length + 1)) === "." + d;
+
+    });
+
+  }
+
+  // Returns the full address if this link leaves the site, otherwise null.
+  function externalTarget(a) {
+
+    if (!a || !a.getAttribute("href")) return null;
+
+    if (a.hasAttribute("data-no-redirect") || a.hasAttribute("download")) {
+      return null;
+    }
+
+    var url;
+
+    try {
+      url = new URL(a.href, window.location.href);
+    } catch (e) {
+      return null;
+    }
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+
+    if (isInternalHost(url.hostname)) return null;
+
+    return url.href;
+
+  }
+
+  function onLinkClick(event) {
+
+    if (!X.enabled || pageId === "redirect" || event.defaultPrevented) return;
+
+    // Left click, or middle click (opens a new tab).
+    if (event.type === "click" && event.button !== 0) return;
+    if (event.type === "auxclick" && event.button !== 1) return;
+
+    var a = event.target && event.target.closest ? event.target.closest("a") : null;
+
+    var target = externalTarget(a);
+
+    if (!target) return;
+
+    event.preventDefault();
+
+    var go = (X.page || "/redirect.html") + "?to=" + encodeURIComponent(target);
+
+    var newTab = a.target === "_blank" || event.button === 1 ||
+      event.ctrlKey || event.metaKey || event.shiftKey;
+
+    if (newTab) {
+      window.open(go, "_blank", "noopener");
+    } else {
+      window.location.assign(go);
+    }
+
+  }
+
+  // One listener for the whole page, so links added later (like the
+  // Pixelfed posts) are covered too.
+  document.addEventListener("click", onLinkClick);
+  document.addEventListener("auxclick", onLinkClick);
+
 
 })();
