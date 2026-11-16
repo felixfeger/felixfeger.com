@@ -18,10 +18,9 @@
   .rd-loader { width: 144px; height: 144px; margin: 0 auto 36px; }
   .rd-loader svg { display: block; width: 100%; height: 100%; overflow: visible; }
   .rd-ring { fill: var(--bg-raised); stroke: var(--line); stroke-width: 2; }
-  .rd-wave-back { fill: var(--teal); opacity: 0.35; }
-  .rd-wave-front { fill: var(--teal); }
-  .rd-drift-a { animation: rd-drift 5s linear infinite; }
-  .rd-drift-b { animation: rd-drift 3.2s linear infinite reverse; }
+  .rd-broken { stroke: var(--teal); }
+  .rd-wave { fill: var(--teal); }
+  .rd-drift { animation: rd-drift 6s linear infinite; }
   @keyframes rd-drift { to { transform: translateX(-160px); } }
 
   .rd-status { margin-top: 28px; margin-bottom: 6px; color: var(--ink-soft); font-weight: 500; min-height: 1.6em; }
@@ -29,7 +28,7 @@
   .rd-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
   @media (prefers-reduced-motion: reduce) {
-    .rd-drift-a, .rd-drift-b { animation: none; }
+    .rd-drift { animation: none; }
   }
 
   [hidden] { display: none !important; }
@@ -53,11 +52,8 @@
         <circle class="rd-ring" cx="80" cy="80" r="79"/>
         <g clip-path="url(#rd-clip)">
           <g id="rd-level" transform="translate(0 170)">
-            <g class="rd-drift-b">
-              <path class="rd-wave-back" d="M-160 6 Q-120 -10 -80 6 T0 6 T80 6 T160 6 T240 6 V220 H-160 Z"/>
-            </g>
-            <g class="rd-drift-a">
-              <path class="rd-wave-front" d="M-160 0 Q-120 -14 -80 0 T0 0 T80 0 T160 0 T240 0 V220 H-160 Z"/>
+            <g class="rd-drift">
+              <path class="rd-wave" d="M-160 0 Q-120 -8 -80 0 T0 0 T80 0 T160 0 T240 0 V220 H-160 Z"/>
             </g>
           </g>
         </g>
@@ -81,9 +77,26 @@
   </section>
 
   <section class="hero rd" id="rd-bad" hidden>
-    <h1>Invalid link</h1>
-    <p class="tagline">The link you followed does not contain a valid web address.</p>
-    <a href="/index.html" class="btn">Return to homepage</a>
+    <div class="rd-loader" aria-hidden="true">
+      <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <circle class="rd-ring" cx="80" cy="80" r="79"/>
+        <g class="rd-broken" fill="none" stroke-width="5" stroke-linecap="round">
+          <rect x="-24" y="-11" width="48" height="22" rx="11" transform="translate(58 58) rotate(45)"/>
+          <rect x="-24" y="-11" width="48" height="22" rx="11" transform="translate(102 102) rotate(45)"/>
+        </g>
+      </svg>
+    </div>
+
+    <h1>This link can&rsquo;t be opened</h1>
+    <p class="tagline">
+      The web address is missing or isn&rsquo;t valid, so there is nowhere to
+      redirect you. Return to the previous page, or continue to the homepage.
+    </p>
+
+    <div class="rd-actions">
+      <a href="/index.html" class="btn btn-teal">Return to homepage</a>
+      <button class="btn" id="rd-back" type="button">Go back</button>
+    </div>
   </section>
 
   <noscript>
@@ -124,7 +137,14 @@
     if ((u.protocol === "http:" || u.protocol === "https:") && raw.length < 2048) dest = u;
   } catch (e) { /* not a valid address */ }
 
-  if (!dest) { $("rd-bad").hidden = false; return; }
+  if (!dest) {
+    $("rd-bad").hidden = false;
+    document.title = "Link can\u2019t be opened \u2014 felixfeger.com";
+    $("rd-back").addEventListener("click", function () {
+      if (history.length > 1) { history.back(); } else { location.href = "/index.html"; }
+    });
+    return;
+  }
 
   // One of my own sites: nothing to warn about, just go.
   if (isInternal(dest.hostname)) { location.replace(dest.href); return; }
@@ -142,8 +162,8 @@
   var level = $("rd-level");
 
   function draw(p) {
-    // 170 = just below the circle, -16 = waves fully above the top edge
-    level.setAttribute("transform", "translate(0 " + (170 - p * 186) + ")");
+    // 170 = just below the circle, -8 = wave fully above the top edge
+    level.setAttribute("transform", "translate(0 " + (168 - p * 176) + ")");
   }
 
   var elapsed = 0, last = null, done = false, shown = null;
