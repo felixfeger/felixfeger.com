@@ -11,37 +11,26 @@
 
 <!-- Page-only styles -->
 <style>
-  .rd { padding: 88px 24px 80px; }
+  .rd { padding: 80px 24px 80px; }
   .rd p { margin-left: auto; margin-right: auto; }
 
-  .rd-route { width: min(100%, 560px); margin: 44px auto 0; }
-  .rd-route svg { display: block; width: 100%; height: auto; overflow: visible; }
-
-  .rd-track { stroke: var(--line); }
-  .rd-progress { stroke: var(--teal); }
-  .rd-start { fill: var(--teal); }
-  .rd-end { fill: var(--bg); stroke: var(--line); stroke-width: 4; }
-  .rd-dot { fill: var(--amber); stroke: var(--bg); stroke-width: 3; }
-
-  .rd-arrived .rd-end { fill: var(--amber); stroke: var(--amber); }
-  .rd-arrived .rd-dot { opacity: 0; }
-
-  .rd-ends {
-    display: flex;
-    justify-content: space-between;
-    gap: 24px;
-    max-width: 560px;
-    margin: 14px auto 0;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-  .rd-ends span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rd-ends span:last-child { text-align: right; }
+  /* Water-fill loader: the level rises as the countdown runs */
+  .rd-loader { width: 144px; height: 144px; margin: 0 auto 36px; }
+  .rd-loader svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .rd-ring { fill: var(--bg-raised); stroke: var(--line); stroke-width: 2; }
+  .rd-wave-back { fill: var(--teal); opacity: 0.35; }
+  .rd-wave-front { fill: var(--teal); }
+  .rd-drift-a { animation: rd-drift 5s linear infinite; }
+  .rd-drift-b { animation: rd-drift 3.2s linear infinite reverse; }
+  @keyframes rd-drift { to { transform: translateX(-160px); } }
 
   .rd-status { margin-top: 28px; margin-bottom: 6px; color: var(--ink-soft); font-weight: 500; min-height: 1.6em; }
   .rd-url { margin-bottom: 32px; max-width: 52ch; color: var(--ink-soft); font-size: 0.85rem; overflow-wrap: anywhere; }
   .rd-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rd-drift-a, .rd-drift-b { animation: none; }
+  }
 
   [hidden] { display: none !important; }
 </style>
@@ -56,48 +45,52 @@
 
 <main>
   <section class="hero rd" id="rd-ok" hidden>
-    <h1>Leaving felixfeger.com</h1>
-    <p class="tagline">
-      Heading to <strong id="rd-host"></strong>. I don&rsquo;t run that site,
-      so what you find there is out of my hands.
-    </p>
-
-    <div class="rd-route" id="rd-route" aria-hidden="true">
-      <svg viewBox="0 0 600 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path id="rd-track" class="rd-track" stroke-width="4" stroke-linecap="round"
-              d="M4 40 Q41.5 8 79 40 T154 40 T229 40 T304 40 T379 40 T454 40 T529 40 T596 40"/>
-        <path id="rd-progress" class="rd-progress" stroke-width="4" stroke-linecap="round"
-              d="M4 40 Q41.5 8 79 40 T154 40 T229 40 T304 40 T379 40 T454 40 T529 40 T596 40"/>
-        <circle class="rd-start" cx="4" cy="40" r="9"/>
-        <circle class="rd-end" cx="596" cy="40" r="9"/>
-        <circle id="rd-dot" class="rd-dot" cx="4" cy="40" r="8"/>
+    <div class="rd-loader" aria-hidden="true">
+      <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="rd-clip"><circle cx="80" cy="80" r="79"/></clipPath>
+        </defs>
+        <circle class="rd-ring" cx="80" cy="80" r="79"/>
+        <g clip-path="url(#rd-clip)">
+          <g id="rd-level" transform="translate(0 170)">
+            <g class="rd-drift-b">
+              <path class="rd-wave-back" d="M-160 6 Q-120 -10 -80 6 T0 6 T80 6 T160 6 T240 6 V220 H-160 Z"/>
+            </g>
+            <g class="rd-drift-a">
+              <path class="rd-wave-front" d="M-160 0 Q-120 -14 -80 0 T0 0 T80 0 T160 0 T240 0 V220 H-160 Z"/>
+            </g>
+          </g>
+        </g>
       </svg>
     </div>
-    <div class="rd-ends" aria-hidden="true">
-      <span>felixfeger.com</span>
-      <span id="rd-host-end"></span>
-    </div>
+
+    <h1>You are leaving felixfeger.com</h1>
+    <p class="tagline">
+      You are being redirected to an external website,
+      <strong id="rd-host"></strong>. Its content and privacy practices are
+      independent of this site.
+    </p>
 
     <p class="rd-status" id="rd-status" role="status" aria-live="polite"></p>
     <p class="rd-url" id="rd-url"></p>
 
     <div class="rd-actions">
-      <a class="btn btn-teal" id="rd-go" data-no-redirect rel="noopener noreferrer">Go now</a>
-      <button class="btn" id="rd-stay" type="button">Stay here</button>
+      <a class="btn btn-teal" id="rd-go" data-no-redirect rel="noopener noreferrer">Continue</a>
+      <button class="btn" id="rd-stay" type="button">Return to site</button>
     </div>
   </section>
 
   <section class="hero rd" id="rd-bad" hidden>
-    <h1>Nothing to open</h1>
-    <p class="tagline">That link didn&rsquo;t include a valid web address.</p>
-    <a href="/index.html" class="btn">Back Home</a>
+    <h1>Invalid link</h1>
+    <p class="tagline">The link you followed does not contain a valid web address.</p>
+    <a href="/index.html" class="btn">Return to homepage</a>
   </section>
 
   <noscript>
     <section class="hero rd">
-      <h1>JavaScript is off</h1>
-      <p class="tagline">This page needs JavaScript to show where the link goes. Go back and copy the address instead.</p>
-      <a href="/index.html" class="btn">Back Home</a>
+      <h1>JavaScript required</h1>
+      <p class="tagline">This page needs JavaScript to display the destination of the link. Please return to the previous page and copy the address directly.</p>
+      <a href="/index.html" class="btn">Return to homepage</a>
     </section>
   </noscript>
 </main>
@@ -140,34 +133,25 @@
 
   $("rd-ok").hidden = false;
   $("rd-host").textContent = dest.host;
-  $("rd-host-end").textContent = dest.host;
   $("rd-url").textContent = dest.href;
   $("rd-go").href = dest.href;
   document.title = "Leaving felixfeger.com for " + dest.host;
 
-  // ---- The route animation -------------------------------------------
+  // ---- Water level -----------------------------------------------------
 
-  var route = $("rd-route");
-  var progress = $("rd-progress");
-  var dot = $("rd-dot");
-  var len = progress.getTotalLength();
-
-  progress.style.strokeDasharray = len;
+  var level = $("rd-level");
 
   function draw(p) {
-    progress.style.strokeDashoffset = len * (1 - p);
-    var pt = progress.getPointAtLength(len * p);
-    dot.setAttribute("cx", pt.x);
-    dot.setAttribute("cy", pt.y);
+    // 170 = just below the circle, -16 = waves fully above the top edge
+    level.setAttribute("transform", "translate(0 " + (170 - p * 186) + ")");
   }
 
-  var elapsed = 0, last = null, done = false;
+  var elapsed = 0, last = null, done = false, shown = null;
 
   function go() {
     done = true;
     draw(1);
-    route.classList.add("rd-arrived");
-    $("rd-status").textContent = "Opening " + dest.host + "\u2026";
+    $("rd-status").textContent = "Redirecting to " + dest.host + "\u2026";
     // replace() keeps this page out of the back-button history
     location.replace(dest.href);
   }
@@ -184,8 +168,12 @@
 
     if (p >= 1) { go(); return; }
 
-    $("rd-status").textContent =
-      "Opening in " + Math.ceil(SECONDS - elapsed / 1000) + "\u2026";
+    var left = Math.ceil(SECONDS - elapsed / 1000);
+    if (left !== shown) {
+      shown = left;
+      $("rd-status").textContent =
+        "Redirecting in " + left + (left === 1 ? " second" : " seconds");
+    }
 
     requestAnimationFrame(frame);
   }
