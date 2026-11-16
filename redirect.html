@@ -104,7 +104,31 @@
 
     <div class="rd-actions">
       <a href="/index.html" class="btn btn-teal">Return to homepage</a>
-      <button class="btn" id="rd-back" type="button">Go back</button>
+      <button class="btn rd-back" type="button">Go back</button>
+    </div>
+  </section>
+
+  <section class="hero rd" id="rd-unverified" hidden>
+    <div class="rd-loader" aria-hidden="true">
+      <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <circle class="rd-ring" cx="80" cy="80" r="79"/>
+        <g class="rd-broken" fill="none" stroke-width="5" stroke-linecap="round">
+          <rect x="-24" y="-11" width="48" height="22" rx="11" transform="translate(58 58) rotate(45)"/>
+          <rect x="-24" y="-11" width="48" height="22" rx="11" transform="translate(102 102) rotate(45)"/>
+        </g>
+      </svg>
+    </div>
+
+    <h1>We couldn&rsquo;t verify this link</h1>
+    <p class="tagline">
+      This link didn&rsquo;t start from a page on felixfeger.com, so we
+      haven&rsquo;t redirected you. If you meant to visit another site, open it
+      directly, or return to the homepage.
+    </p>
+
+    <div class="rd-actions">
+      <a href="/index.html" class="btn btn-teal">Return to homepage</a>
+      <button class="btn rd-back" type="button">Go back</button>
     </div>
   </section>
 
@@ -146,17 +170,35 @@
     if ((u.protocol === "http:" || u.protocol === "https:") && raw.length < 2048) dest = u;
   } catch (e) { /* not a valid address */ }
 
-  if (!dest) {
-    $("rd-bad").hidden = false;
-    document.title = "That link didn\u2019t work \u2014 felixfeger.com";
-    $("rd-back").addEventListener("click", function () {
-      if (history.length > 1) { history.back(); } else { location.href = "/index.html"; }
+  function showNotice(id, title) {
+    $(id).hidden = false;
+    document.title = title + " \u2014 felixfeger.com";
+    Array.prototype.forEach.call(document.querySelectorAll(".rd-back"), function (btn) {
+      btn.addEventListener("click", function () {
+        if (history.length > 1) { history.back(); } else { location.href = "/index.html"; }
+      });
     });
-    return;
   }
+
+  if (!dest) { showNotice("rd-bad", "That link didn\u2019t work"); return; }
 
   // One of my own sites: nothing to warn about, just go.
   if (isInternal(dest.hostname)) { location.replace(dest.href); return; }
+
+  // ---- Confirm the click started on this site -------------------------
+  // site.js saves a one-time token in this browser when a link is clicked.
+  // A link made anywhere else has no token, so it stops here.
+
+  function verified() {
+    var id = new URLSearchParams(location.search).get("t") || "";
+    if (!/^[0-9a-f]{32}$/.test(id)) return false;
+    try {
+      var rec = JSON.parse(localStorage.getItem("rd:" + id));
+      return !!rec && rec.to === dest.href && Date.now() - rec.ts < 10 * 60 * 1000;
+    } catch (e) { return false; }
+  }
+
+  if (!verified()) { showNotice("rd-unverified", "Link not verified"); return; }
 
   // ---- Fill in the page ----------------------------------------------
 
