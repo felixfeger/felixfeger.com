@@ -21,6 +21,8 @@
   .rd-broken { stroke: var(--teal); }
   .rd-wave { fill: var(--teal); }
   .rd-drift { animation: rd-drift 6s linear infinite; }
+  /* The wave is 560 wide and one cycle is 160, so after sliding 160 it still
+     covers the whole circle and the loop restarts with no visible jump. */
   @keyframes rd-drift { to { transform: translateX(-160px); } }
 
   .rd-status { margin-top: 28px; margin-bottom: 6px; color: var(--ink-soft); font-weight: 500; min-height: 1.6em; }
@@ -53,7 +55,7 @@
         <g clip-path="url(#rd-clip)">
           <g id="rd-level" transform="translate(0 170)">
             <g class="rd-drift">
-              <path class="rd-wave" d="M-160 0 Q-120 -8 -80 0 T0 0 T80 0 T160 0 T240 0 V220 H-160 Z"/>
+              <path class="rd-wave" d="M-160 0 Q-120 -8 -80 0 T0 0 T80 0 T160 0 T240 0 T320 0 T400 0 V220 H-160 Z"/>
             </g>
           </g>
         </g>
@@ -87,10 +89,10 @@
       </svg>
     </div>
 
-    <h1>This link can&rsquo;t be opened</h1>
+    <h1>That link didn&rsquo;t work</h1>
     <p class="tagline">
-      The web address is missing or isn&rsquo;t valid, so there is nowhere to
-      redirect you. Return to the previous page, or continue to the homepage.
+      The address behind it is missing or incomplete, so we couldn&rsquo;t take
+      you anywhere. Head back to where you were, or start again from the homepage.
     </p>
 
     <div class="rd-actions">
@@ -139,7 +141,7 @@
 
   if (!dest) {
     $("rd-bad").hidden = false;
-    document.title = "Link can\u2019t be opened \u2014 felixfeger.com";
+    document.title = "That link didn\u2019t work \u2014 felixfeger.com";
     $("rd-back").addEventListener("click", function () {
       if (history.length > 1) { history.back(); } else { location.href = "/index.html"; }
     });
