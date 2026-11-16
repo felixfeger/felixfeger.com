@@ -95,6 +95,9 @@ window.SITE = {
   //   internalDomains: sites that count as "this site". Subdomains are
   //                    included automatically.
   //
+  // Each trip through the screen carries a one-time token created by the
+  // click, so redirect.html only works for links clicked on this site.
+  //
   // To skip the screen for one link, add data-no-redirect to it.
 
   externalRedirect: {
@@ -686,6 +689,52 @@ window.SITE = {
 
   }
 
+  var TOKEN_PREFIX = "rd:";
+  var TOKEN_MAX_AGE = 10 * 60 * 1000;
+
+  function makeToken(target) {
+
+    try {
+
+      var bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+
+      var id = Array.prototype.map.call(bytes, function (b) {
+        return ("0" + b.toString(16)).slice(-2);
+      }).join("");
+
+      // Tidy up old entries.
+      var now = Date.now();
+
+      for (var i = window.localStorage.length - 1; i >= 0; i--) {
+
+        var key = window.localStorage.key(i);
+
+        if (key && key.indexOf(TOKEN_PREFIX) === 0) {
+
+          var rec = null;
+
+          try { rec = JSON.parse(window.localStorage.getItem(key)); } catch (e) { /* ignore */ }
+
+          if (!rec || now - rec.ts > TOKEN_MAX_AGE) window.localStorage.removeItem(key);
+
+        }
+
+      }
+
+      window.localStorage.setItem(
+        TOKEN_PREFIX + id,
+        JSON.stringify({ to: target, ts: now })
+      );
+
+      return id;
+
+    } catch (e) {
+      return null;
+    }
+
+  }
+
   function onLinkClick(event) {
 
     if (!X.enabled || pageId === "redirect" || event.defaultPrevented) return;
@@ -702,7 +751,25 @@ window.SITE = {
 
     event.preventDefault();
 
-    var go = (X.page || "/redirect.html") + "?to=" + encodeURIComponent(target);
+    // Proof that this click started on this site: a random one-time ID is
+    // saved in this browser's storage next to the destination. redirect.html
+    // only continues if it finds a matching, recent entry. A link made
+    // anywhere else has no entry, so it can't pass.
+    var token = makeToken(target);
+
+    // If the token can't be saved (storage blocked), skip the screen
+    // rather than break the link.
+    if (!token) {
+      if (a.target === "_blank" || event.button === 1) {
+        window.open(target, "_blank", "noopener");
+      } else {
+        window.location.assign(target);
+      }
+      return;
+    }
+
+    var go = (X.page || "/redirect.html") + "?to=" + encodeURIComponent(target) +
+      "&t=" + token;
 
     var newTab = a.target === "_blank" || event.button === 1 ||
       event.ctrlKey || event.metaKey || event.shiftKey;
