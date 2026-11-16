@@ -132,6 +132,11 @@ window.SITE = {
 
   socials: [
 
+     {
+      label: "Instagram",
+      url: "https://instagram.com/felix_transit"
+    },
+    
     {
       label: "Mastodon",
       url: "https://mastodon.social/@felix_traveler"
@@ -145,13 +150,7 @@ window.SITE = {
     {
       label: "GitHub",
       url: "https://github.com/felixfeger"
-    },
-
-    {
-      label: "Linktree",
-      url: "https://linktr.ee/felix_traveler"
     }
-
   ],
 
 
