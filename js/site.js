@@ -156,7 +156,7 @@ window.SITE = {
 
   // ---- Footer text ----------------------------------------------------
 
-  copyright: "Copyright 2026 by Felix Feger.",
+  copyright: "©️ 2026 by Felix Feger.",
 
 
   // ---- Support widget -------------------------------------------------
