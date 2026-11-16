@@ -19,9 +19,12 @@
   .rd-loader svg { display: block; width: 100%; height: 100%; overflow: visible; }
   .rd-ring { fill: var(--bg-raised); stroke: var(--line); stroke-width: 2; }
   .rd-broken { stroke: var(--teal); }
-  .rd-wave { fill: var(--teal); }
-  .rd-drift { animation: rd-drift 6s linear infinite; }
-  /* The wave is 560 wide and one cycle is 160, so after sliding 160 it still
+  .rd-rim { fill: none; stroke: var(--line); stroke-width: 2; }
+  .rd-wave-back { fill: var(--teal); opacity: 0.3; }
+  .rd-wave-front { fill: url(#rd-water); }
+  .rd-drift-back { animation: rd-drift 7s linear infinite; }
+  .rd-drift-front { animation: rd-drift 5s linear infinite; }
+  /* Each wave is 560 wide with a 160 cycle, so after sliding 160 it still
      covers the whole circle and the loop restarts with no visible jump. */
   @keyframes rd-drift { to { transform: translateX(-160px); } }
 
@@ -30,7 +33,7 @@
   .rd-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
   @media (prefers-reduced-motion: reduce) {
-    .rd-drift { animation: none; }
+    .rd-drift-back, .rd-drift-front { animation: none; }
   }
 
   [hidden] { display: none !important; }
@@ -50,15 +53,19 @@
       <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <clipPath id="rd-clip"><circle cx="80" cy="80" r="79"/></clipPath>
+          <linearGradient id="rd-water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" style="stop-color: var(--teal)"/>
+            <stop offset="1" style="stop-color: var(--teal-deep)"/>
+          </linearGradient>
         </defs>
         <circle class="rd-ring" cx="80" cy="80" r="79"/>
         <g clip-path="url(#rd-clip)">
-          <g id="rd-level" transform="translate(0 170)">
-            <g class="rd-drift">
-              <path class="rd-wave" d="M-160 0 Q-120 -8 -80 0 T0 0 T80 0 T160 0 T240 0 T320 0 T400 0 V220 H-160 Z"/>
-            </g>
+          <g id="rd-level" transform="translate(0 172)">
+            <g class="rd-drift-back"><path class="rd-wave-back" d="M-160 8.31 L-156 8.75 L-152 8.97 L-148 8.97 L-144 8.75 L-140 8.31 L-136 7.67 L-132 6.84 L-128 5.85 L-124 4.70 L-120 3.44 L-116 2.10 L-112 0.71 L-108 -0.71 L-104 -2.10 L-100 -3.44 L-96 -4.70 L-92 -5.85 L-88 -6.84 L-84 -7.67 L-80 -8.31 L-76 -8.75 L-72 -8.97 L-68 -8.97 L-64 -8.75 L-60 -8.31 L-56 -7.67 L-52 -6.84 L-48 -5.85 L-44 -4.70 L-40 -3.44 L-36 -2.10 L-32 -0.71 L-28 0.71 L-24 2.10 L-20 3.44 L-16 4.70 L-12 5.85 L-8 6.84 L-4 7.67 L0 8.31 L4 8.75 L8 8.97 L12 8.97 L16 8.75 L20 8.31 L24 7.67 L28 6.84 L32 5.85 L36 4.70 L40 3.44 L44 2.10 L48 0.71 L52 -0.71 L56 -2.10 L60 -3.44 L64 -4.70 L68 -5.85 L72 -6.84 L76 -7.67 L80 -8.31 L84 -8.75 L88 -8.97 L92 -8.97 L96 -8.75 L100 -8.31 L104 -7.67 L108 -6.84 L112 -5.85 L116 -4.70 L120 -3.44 L124 -2.10 L128 -0.71 L132 0.71 L136 2.10 L140 3.44 L144 4.70 L148 5.85 L152 6.84 L156 7.67 L160 8.31 L164 8.75 L168 8.97 L172 8.97 L176 8.75 L180 8.31 L184 7.67 L188 6.84 L192 5.85 L196 4.70 L200 3.44 L204 2.10 L208 0.71 L212 -0.71 L216 -2.10 L220 -3.44 L224 -4.70 L228 -5.85 L232 -6.84 L236 -7.67 L240 -8.31 L244 -8.75 L248 -8.97 L252 -8.97 L256 -8.75 L260 -8.31 L264 -7.67 L268 -6.84 L272 -5.85 L276 -4.70 L280 -3.44 L284 -2.10 L288 -0.71 L292 0.71 L296 2.10 L300 3.44 L304 4.70 L308 5.85 L312 6.84 L316 7.67 L320 8.31 L324 8.75 L328 8.97 L332 8.97 L336 8.75 L340 8.31 L344 7.67 L348 6.84 L352 5.85 L356 4.70 L360 3.44 L364 2.10 L368 0.71 L372 -0.71 L376 -2.10 L380 -3.44 L384 -4.70 L388 -5.85 L392 -6.84 L396 -7.67 L400 -8.31 V220 H-160 Z"/></g>
+            <g class="rd-drift-front"><path class="rd-wave-front" d="M-160 0.00 L-156 1.10 L-152 2.16 L-148 3.18 L-144 4.11 L-140 4.95 L-136 5.66 L-132 6.24 L-128 6.66 L-124 6.91 L-120 7.00 L-116 6.91 L-112 6.66 L-108 6.24 L-104 5.66 L-100 4.95 L-96 4.11 L-92 3.18 L-88 2.16 L-84 1.10 L-80 -0.00 L-76 -1.10 L-72 -2.16 L-68 -3.18 L-64 -4.11 L-60 -4.95 L-56 -5.66 L-52 -6.24 L-48 -6.66 L-44 -6.91 L-40 -7.00 L-36 -6.91 L-32 -6.66 L-28 -6.24 L-24 -5.66 L-20 -4.95 L-16 -4.11 L-12 -3.18 L-8 -2.16 L-4 -1.10 L0 0.00 L4 1.10 L8 2.16 L12 3.18 L16 4.11 L20 4.95 L24 5.66 L28 6.24 L32 6.66 L36 6.91 L40 7.00 L44 6.91 L48 6.66 L52 6.24 L56 5.66 L60 4.95 L64 4.11 L68 3.18 L72 2.16 L76 1.10 L80 0.00 L84 -1.10 L88 -2.16 L92 -3.18 L96 -4.11 L100 -4.95 L104 -5.66 L108 -6.24 L112 -6.66 L116 -6.91 L120 -7.00 L124 -6.91 L128 -6.66 L132 -6.24 L136 -5.66 L140 -4.95 L144 -4.11 L148 -3.18 L152 -2.16 L156 -1.10 L160 -0.00 L164 1.10 L168 2.16 L172 3.18 L176 4.11 L180 4.95 L184 5.66 L188 6.24 L192 6.66 L196 6.91 L200 7.00 L204 6.91 L208 6.66 L212 6.24 L216 5.66 L220 4.95 L224 4.11 L228 3.18 L232 2.16 L236 1.10 L240 0.00 L244 -1.10 L248 -2.16 L252 -3.18 L256 -4.11 L260 -4.95 L264 -5.66 L268 -6.24 L272 -6.66 L276 -6.91 L280 -7.00 L284 -6.91 L288 -6.66 L292 -6.24 L296 -5.66 L300 -4.95 L304 -4.11 L308 -3.18 L312 -2.16 L316 -1.10 L320 -0.00 L324 1.10 L328 2.16 L332 3.18 L336 4.11 L340 4.95 L344 5.66 L348 6.24 L352 6.66 L356 6.91 L360 7.00 L364 6.91 L368 6.66 L372 6.24 L376 5.66 L380 4.95 L384 4.11 L388 3.18 L392 2.16 L396 1.10 L400 0.00 V220 H-160 Z"/></g>
           </g>
         </g>
+        <circle class="rd-rim" cx="80" cy="80" r="79"/>
       </svg>
     </div>
 
@@ -164,8 +171,8 @@
   var level = $("rd-level");
 
   function draw(p) {
-    // 170 = just below the circle, -8 = wave fully above the top edge
-    level.setAttribute("transform", "translate(0 " + (168 - p * 176) + ")");
+    // 172 = just below the circle, -12 = waves fully above the top edge
+    level.setAttribute("transform", "translate(0 " + (172 - p * 184) + ")");
   }
 
   var elapsed = 0, last = null, done = false, shown = null;
