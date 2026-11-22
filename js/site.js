@@ -1,4 +1,4 @@
-// js/site.js
+// js/site.js 
 //
 // Loaded on every page (first thing inside <body>). This file owns
 // everything the pages share, so each page only holds its own content:
