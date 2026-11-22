@@ -162,7 +162,7 @@ window.SITE = {
   // ---- Support widget -------------------------------------------------
   // Address of the support widget script. Leave "" to turn it off.
 
-  support: "https://www.noupe.com/embed/01a1903b0f0070008fc9191dfc98971be058.js"
+  support: ""
 
 };
 
