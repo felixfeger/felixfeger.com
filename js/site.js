@@ -74,7 +74,7 @@ window.SITE = {
 
     { id: "city-metro",    label: "City Metro",    href: "city-metro.html" },
 
-    { id: "flights",       label: "Flights",       href: "https://flights.felixfeger.com" },
+    { id: "flights",       label: "Flights",       href: "https://flights.felixfeger.com/share/public" },
 
     { id: "blog",          label: "Blog",          href: "https://blog.felixfeger.com" },
 
