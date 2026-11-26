@@ -41,11 +41,11 @@ window.SITE = {
   //                dismissed the old message will see the new one.
 
   announcement: {
-    enabled: false,
-    id: "11-10-26",
-    text: "Update on the Instagram Accounts Situation",
-    description: "As of November 10, 2026, we have regained access to @felix_traveler and @felix_transit. The account @felix.transit has since been archived. We apologize for any inconvenience."
-  },
+    enabled: true,
+    id: "11-26-26",
+    text: "Monthly Site Maintenance",
+    description: "All Office of Felix Feger sites will be down on November 26
+    due to Montly Site Maintenance from 5 PM to 6 PM."
 
 
   // ---- Navigation -----------------------------------------------------
