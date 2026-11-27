@@ -40,13 +40,12 @@ window.SITE = {
   //   id:          change this whenever you change the message. Anyone who
   //                dismissed the old message will see the new one.
 
-  announcement: {
-    enabled: true,
+    announcement: {
+    enabled: false,
     id: "11-26-26",
     text: "Monthly Site Maintenance",
-    description: "All Office of Felix Feger sites will be down on November 26
-    due to Montly Site Maintenance from 5 PM to 6 PM."
-
+    description: "All Office of Felix Feger sites will be down on November 26 due to monthly site maintenance from 5 PM to 6 PM."
+  },
 
   // ---- Navigation -----------------------------------------------------
   //
